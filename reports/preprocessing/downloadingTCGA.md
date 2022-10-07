@@ -3,6 +3,24 @@ TCGA-BRCA data exploration
 Pilar González Marchante
 2022-10-07
 
+- <a href="#what-is-tcga-brca" id="toc-what-is-tcga-brca">What is
+  TCGA-BRCA?</a>
+- <a href="#how-to-download-tcga-data-with-tcgabiolinks"
+  id="toc-how-to-download-tcga-data-with-tcgabiolinks">How to download
+  TCGA data with <code>TCGAbiolinks</code></a>
+- <a href="#finding-intersecting-samples-for-all-omics"
+  id="toc-finding-intersecting-samples-for-all-omics">Finding intersecting
+  samples for all omics</a>
+- <a
+  href="#downloading-intersecting-samples-for-rna-seq-mirna-seq-and-methylation"
+  id="toc-downloading-intersecting-samples-for-rna-seq-mirna-seq-and-methylation">Downloading
+  intersecting samples for RNA-Seq, miRNA-Seq and methylation</a>
+- <a
+  href="#downloading-intersecting-samples-for-rna-seq-mirna-seq-methylation-and-proteomics"
+  id="toc-downloading-intersecting-samples-for-rna-seq-mirna-seq-methylation-and-proteomics">Downloading
+  intersecting samples for RNA-Seq, miRNA-Seq, methylation and
+  proteomics</a>
+
 # What is TCGA-BRCA?
 
 When looking for a suitable data set, the minimum requirements to
