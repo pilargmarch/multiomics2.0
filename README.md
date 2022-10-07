@@ -1,5 +1,5 @@
 # multiomics2.0 #
-![ Machine learning approach for allocating gene function. Karen Arnott/EMBL-EBI](reports/cover.jpg)
+![Machine learning approach for allocating gene function. Karen Arnott/EMBL-EBI](reports/cover.jpg)
 
 This is the repository for my Master's Final Thesis.
 
