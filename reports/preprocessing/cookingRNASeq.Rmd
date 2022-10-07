@@ -1,15 +1,10 @@
 ---
 title: "Cooking RNA-Seq data"
 author: "Pilar González Marchante"
-date: "`r Sys.Date()`"
 output: 
-  html_document:
-    toc_float: true
+  rmarkdown::github_document:
     toc: true
-    theme: yeti
-editor_options: 
-  markdown: 
-    wrap: 72
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
