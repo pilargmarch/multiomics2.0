@@ -1,30 +1,52 @@
 # multiomics2.0 #
-![Machine learning approach for allocating gene function. Karen Arnott/EMBL-EBI](reports/cover.jpg)
-Image credits: Karen Arnott/EMBL-EBI.
+![Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](reports/cover.jpg)
+<sup>[Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](https://www.embl.org/news/science/charting-a-multi-omic-universe/)</sup>
 
 This is the repository for my Master's Final Thesis.
 
-1. [Data](data/): RNA-Seq, miRNA-Seq, methylation and proteomics data used in this project, both as raw and cooked.
+## :dna: [Data](data/)
+RNA-Seq, miRNA-Seq, methylation and proteomics data used in this project, both as raw and cooked.
 
-2. [Scripts](scripts/): final `.R` scripts used to generate the results.
-    - [Preprocessing](scripts/preprocessing/)
-        1. [Downloading TCGA data](scripts/preprocessing/downloadingTCGA.R)
-        2. [Cooking RNA-Seq](scripts/preprocessing/cookingRNASeq.R)
-        3. 
-    - [Associations](scripts/associations/)
-    - [Models](scripts/models/)
 
-3. [Reports](reports/): exploratory `.Rmd` notebooks (knitted to `.html`) used to decide which pipelines to follow.
-    - [Preprocessing](reports/preprocessing/)
-        1. [Downloading TCGA data](reports/preprocessing/downloadingTCGA.html)
-        2. [Cooking RNA-Seq](reports/preprocessing/cookingRNASeq.html)
-        3. 
-    - [Associations](reports/associations/)
-    - [Models](reports/models/)
+---
 
-4. [Results](results/)
-    - [Preprocessing](results/preprocessing/)
-        1. [Cooking RNA-Seq](results/preprocessing/cookingRNASeq)
-        2. 
-    - [Associations](results/associations/)
-    - [Models](results/models/)
+## :computer: [Scripts](scripts/)
+Final `.R` scripts used to generate the obtained results.
+
+### 🍳 [Preprocessing](scripts/preprocessing/)
+- [downloadingTCGA.R](scripts/preprocessing/downloadingTCGA.R)
+- [cookingRNASeq.R](scripts/preprocessing/cookingRNASeq.R)
+- 
+
+### 👫 [Associations](scripts/associations/)
+
+### 📈 [Models](scripts/models/)
+
+
+
+---
+
+## 🗺️ [Reports](reports/)
+
+Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines to follow in the final scripts.
+
+### 🍳 [Preprocessing](reports/preprocessing/)
+- [downloadingTCGA.md](reports/preprocessing/downloadingTCGA.md)
+- [cookingRNASeq.md](reports/preprocessing/cookingRNASeq.md)
+- 
+
+### 👫 [Associations](reports/associations/)
+
+### 📈 [Models](reports/models/)
+
+---
+
+## 📓 [Results](results/)
+
+### 🍳 [Preprocessing](results/preprocessing/)
+- [Cooking RNA-Seq](results/preprocessing/cookingRNASeq)
+- 
+
+### 👫 [Associations](results/associations/)
+
+### 📈 [Models](results/models/)
