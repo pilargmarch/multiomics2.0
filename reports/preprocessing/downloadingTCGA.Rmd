@@ -1,5 +1,5 @@
 ---
-title: "TCGA-BRCA data exploration"
+title: "Downloading TCGA-BRCA data"
 author: "Pilar González Marchante"
 output: 
   rmarkdown::github_document:

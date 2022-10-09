@@ -1,5 +1,5 @@
 ---
-title: "Cooking RNA-Seq data"
+title: "Cooking miRNA-Seq data"
 author: "Pilar González Marchante"
 output: 
   rmarkdown::github_document:

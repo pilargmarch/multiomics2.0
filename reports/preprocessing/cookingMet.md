@@ -1,4 +1,4 @@
-Cooking RNA-Seq data
+Cooking methylation data
 ================
 Pilar González Marchante
 

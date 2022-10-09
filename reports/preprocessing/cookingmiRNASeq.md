@@ -1,4 +1,4 @@
-Cooking RNA-Seq data
+Cooking miRNA-Seq data
 ================
 Pilar González Marchante
 
