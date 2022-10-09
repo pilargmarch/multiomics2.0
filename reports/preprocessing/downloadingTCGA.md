@@ -1,7 +1,6 @@
 TCGA-BRCA data exploration
 ================
 Pilar González Marchante
-2022-10-07
 
 - <a href="#what-is-tcga-brca" id="toc-what-is-tcga-brca">What is
   TCGA-BRCA?</a>

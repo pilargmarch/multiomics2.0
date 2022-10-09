@@ -43,88 +43,7 @@ the raw counts.
 ``` r
 library(TCGAbiolinks)
 library(SummarizedExperiment)
-```
 
-    ## Loading required package: MatrixGenerics
-
-    ## Loading required package: matrixStats
-
-    ## 
-    ## Attaching package: 'MatrixGenerics'
-
-    ## The following objects are masked from 'package:matrixStats':
-    ## 
-    ##     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
-    ##     colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
-    ##     colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
-    ##     colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
-    ##     colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
-    ##     colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
-    ##     colWeightedMeans, colWeightedMedians, colWeightedSds,
-    ##     colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
-    ##     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
-    ##     rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
-    ##     rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
-    ##     rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
-    ##     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
-    ##     rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
-    ##     rowWeightedSds, rowWeightedVars
-
-    ## Loading required package: GenomicRanges
-
-    ## Loading required package: stats4
-
-    ## Loading required package: BiocGenerics
-
-    ## 
-    ## Attaching package: 'BiocGenerics'
-
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     IQR, mad, sd, var, xtabs
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     anyDuplicated, append, as.data.frame, basename, cbind, colnames,
-    ##     dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
-    ##     grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
-    ##     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-    ##     rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
-    ##     union, unique, unsplit, which.max, which.min
-
-    ## Loading required package: S4Vectors
-
-    ## 
-    ## Attaching package: 'S4Vectors'
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     expand.grid, I, unname
-
-    ## Loading required package: IRanges
-
-    ## Loading required package: GenomeInfoDb
-
-    ## Loading required package: Biobase
-
-    ## Welcome to Bioconductor
-    ## 
-    ##     Vignettes contain introductory material; view with
-    ##     'browseVignettes()'. To cite Bioconductor, see
-    ##     'citation("Biobase")', and for packages 'citation("pkgname")'.
-
-    ## 
-    ## Attaching package: 'Biobase'
-
-    ## The following object is masked from 'package:MatrixGenerics':
-    ## 
-    ##     rowMedians
-
-    ## The following objects are masked from 'package:matrixStats':
-    ## 
-    ##     anyMissing, rowMedians
-
-``` r
 rna.raw.counts <- as.data.frame(assay(rna))
 rna.genes.info <- as.data.frame(rowRanges(rna))
 rna.sample.info <- as.data.frame(colData(rna))
@@ -391,21 +310,10 @@ have to define our factors as `condition`, `tss`, `plate`, `portion`and
 
 ``` r
 library(NOISeq)
+library(TCGAbiolinks)
 ```
 
-    ## Loading required package: splines
-
-    ## Loading required package: Matrix
-
-    ## 
-    ## Attaching package: 'Matrix'
-
-    ## The following object is masked from 'package:S4Vectors':
-    ## 
-    ##     expand
-
 ``` r
-library(TCGAbiolinks)
 barcodes <- get_IDs(rna)
 myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
 head(myfactors)
@@ -543,7 +451,7 @@ filtering method.
 boxplot(log10(rna.raw.counts[, 1:50])+1, outline = FALSE, las = 2)
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](images/cookingRNASeq/boxplot.raw.png)
 
 ``` r
 mybiodetection <- dat(mydata, k = 0, type = "biodetection", factor = NULL)
@@ -588,25 +496,6 @@ and 1 as possible CPM thresholds.
 ``` r
 library(SummarizedExperiment)
 library(edgeR)
-```
-
-    ## Loading required package: limma
-
-    ## 
-    ## Attaching package: 'limma'
-
-    ## The following object is masked from 'package:BiocGenerics':
-    ## 
-    ##     plotMA
-
-    ## 
-    ## Attaching package: 'edgeR'
-
-    ## The following object is masked from 'package:NOISeq':
-    ## 
-    ##     rpkm
-
-``` r
 library(limma)
 library(ggplot2)
 
@@ -620,7 +509,7 @@ ggplot() + aes(x=mean_log_cpm) +
     ggtitle("Histogram of logCPM before filtering")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](images/cookingRNASeq/histogram.logCPM.png)
 
 ``` r
 ggplot() + aes(x=mean_log_cpm) +
@@ -628,16 +517,11 @@ ggplot() + aes(x=mean_log_cpm) +
     geom_vline(xintercept=filter_threshold) +
     ggtitle("Density plot of logCPM before filtering") +
     xlim(-6.1, 13.5)
-```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-18-2.png)<!-- -->
-
-``` r
 summary(colSums(rna.raw.counts))
 ```
 
-    ##      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-    ##  19225117  46779421  57014106  57485218  68315834 114015705
+![](images/cookingRNASeq/density.logCPM.png)
 
 So let’s try CPM filtering with a `CPM threshold = 0.2, 0.5 and 1` and a
 `cv.cutoff = 500`, so that we remove those features with low expression
@@ -652,25 +536,36 @@ myfiltCPM05 <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.conditi
 myfiltCPM1 <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.condition, norm = FALSE, depth = NULL, method = 1, cv.cutoff = 500, cpm = 1, p.adj = "fdr") # 17276 features (28.5%) are to be kept for differential expression analysis with filtering method 1
 
 myfiltWilcoxon <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.condition, norm = FALSE, depth = NULL, method = 2, p.adj = "fdr") # 56401 (93%) features are to be kept for differential expression analysis with filtering method 2
+```
 
+``` r
 boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2)
-boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2)
-boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2)
-boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2)
 ```
 
 ![CPM filtering with threshold =
 0.2](images/cookingRNASeq/boxplot.filt.CPM.02.png)
 
+``` r
+boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2)
+```
+
 ![CPM filtering with threshold =
 0.5](images/cookingRNASeq/boxplot.filt.CPM.05.png)
+
+``` r
+boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2)
+```
 
 ![CPM filtering with threshold =
 1](images/cookingRNASeq/boxplot.filt.CPM.1.png)
 
-![CPM filtering with threshold =
-0.2](images/cookingRNASeq/boxplot.filt.Wilcoxon.png) What kind of
-features are these methods filtering out?
+``` r
+boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2)
+```
+
+![Wilcoxon filtering](images/cookingRNASeq/boxplot.filt.Wilcoxon.png)
+
+What kind of features are these methods filtering out?
 
 ``` r
 myCPMdata02 <- NOISeq::readData(data = myfiltCPM02, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
@@ -680,40 +575,50 @@ myCPMdata05 <- NOISeq::readData(data = myfiltCPM05, factors = myfactors, length 
 myCPMdata1 <- NOISeq::readData(data = myfiltCPM1, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 
 myWilcoxondata <- NOISeq::readData(data = myfiltWilcoxon, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
+```
 
+``` r
 mybiodetectionCPM02 <- dat(myCPMdata02, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM02, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![CPM filtering with threshold =
+0.2](images/cookingRNASeq/mybiodetection.CPM.02.png)
+
+``` r
 mybiodetectionCPM05 <- dat(myCPMdata05, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM05, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![CPM filtering with threshold =
+0.5](images/cookingRNASeq/mybiodetection.CPM.05.png)
+
+``` r
 mybiodetectionCPM1 <- dat(myCPMdata1, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM1, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![CPM filtering with threshold =
+1](images/cookingRNASeq/mybiodetection.CPM.1.png)
+
+``` r
 mybiodetectionWilcoxon <- dat(myWilcoxondata, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionWilcoxon, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![](images/cookingRNASeq/mybiodetection.Wilcoxon.png)
+
+``` r
 sum(mydata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19916 protein coding genes
 sum(myCPMdata02@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 16021 protein coding genes
 sum(myCPMdata05@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 15434 protein coding genes
 sum(myCPMdata1@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 14772 protein coding genes
 sum(myWilcoxondata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19391 protein coding genes
 ```
-
-![CPM filtering with threshold =
-0.2](images/cookingRNASeq/mybiodetection.CPM.02.png)
-
-![CPM filtering with threshold =
-0.5](images/cookingRNASeq/mybiodetection.CPM.05.png)
-
-![CPM filtering with threshold =
-1](images/cookingRNASeq/mybiodetection.CPM.1.png)
-
-![Wilcoxon filtering](images/cookingRNASeq/mybiodetection.Wilcoxon.png)
 
 Method 2 (Wilcoxon test) barely does any filtering at all, so we’ll
 stick to method 1 (CPM). Given the amount of protein coding features we
@@ -756,79 +661,10 @@ expression values.
 
 ``` r
 myexplengthbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "lengthbias")
-```
-
-    ## [1] "Length bias detection information is to be computed for:"
-    ## [1] "cancer" "normal"
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##      Min       1Q   Median       3Q      Max 
-    ## -12.4787  -4.2298  -0.0206   3.0406  22.4140 
-    ## 
-    ## Coefficients: (2 not defined because of singularities)
-    ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)    19.011      6.559   2.898  0.00479 ** 
-    ## bx1            -3.886      6.798  -0.572  0.56905    
-    ## bx2            38.257      7.306   5.236 1.19e-06 ***
-    ## bx3            10.846      8.091   1.340  0.18371    
-    ## bx4            32.309      8.608   3.753  0.00032 ***
-    ## bx5            14.000     10.463   1.338  0.18448    
-    ## bx6            26.124     15.580   1.677  0.09730 .  
-    ## bx7             1.192     37.970   0.031  0.97504    
-    ## bx8            51.397    197.767   0.260  0.79559    
-    ## bx9          -306.846   1459.827  -0.210  0.83403    
-    ## bx10         1311.533   6093.355   0.215  0.83010    
-    ## bx11        -6915.289  32215.101  -0.215  0.83055    
-    ## bx12               NA         NA      NA       NA    
-    ## bx13               NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 6.559 on 84 degrees of freedom
-    ## Multiple R-squared:  0.6913, Adjusted R-squared:  0.6509 
-    ## F-statistic:  17.1 on 11 and 84 DF,  p-value: < 2.2e-16
-    ## 
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.7902 -3.8141 -0.8844  3.1568 22.1201 
-    ## 
-    ## Coefficients: (2 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)     24.491      6.273   3.904 0.000190 ***
-    ## bx1            -12.569      6.501  -1.933 0.056550 .  
-    ## bx2             26.130      6.987   3.740 0.000336 ***
-    ## bx3              5.535      7.737   0.715 0.476364    
-    ## bx4             32.360      8.231   3.931 0.000173 ***
-    ## bx5             11.402     10.005   1.140 0.257679    
-    ## bx6             36.513     14.898   2.451 0.016328 *  
-    ## bx7            -19.737     36.310  -0.544 0.588186    
-    ## bx8            186.854    189.118   0.988 0.325977    
-    ## bx9          -1293.000   1395.984  -0.926 0.356981    
-    ## bx10          5415.628   5826.872   0.929 0.355333    
-    ## bx11        -28591.057  30806.226  -0.928 0.356018    
-    ## bx12                NA         NA      NA       NA    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 6.273 on 84 degrees of freedom
-    ## Multiple R-squared:  0.7606, Adjusted R-squared:  0.7293 
-    ## F-statistic: 24.26 on 11 and 84 DF,  p-value: < 2.2e-16
-
-``` r
 explo.plot(myexplengthbias.filt, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](images/cookingRNASeq/length.bias.filt.png)
 
 Since the p-values are significant (even though R<sup>2</sup>
 coefficients aren’t higher than 95%) and we can see in the graph that
@@ -843,79 +679,10 @@ the expression values.
 
 ``` r
 myexpGCbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "GCbias")
-```
-
-    ## [1] "GC content bias detection is to be computed for:"
-    ## [1] "cancer" "normal"
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##      Min       1Q   Median       3Q      Max 
-    ## -10.7042  -3.6881  -0.6295   3.0816  12.2557 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)   26.3116     5.1789   5.081 2.28e-06 ***
-    ## bx1           -9.6796     7.3241  -1.322   0.1899    
-    ## bx2          -14.6534    46.3276  -0.316   0.7526    
-    ## bx3            0.6629    10.9283   0.061   0.9518    
-    ## bx4           11.8903     6.5747   1.808   0.0742 .  
-    ## bx5           11.5113     6.0597   1.900   0.0610 .  
-    ## bx6           11.3659     6.0680   1.873   0.0646 .  
-    ## bx7            7.0364     6.1741   1.140   0.2577    
-    ## bx8           14.5436     6.3594   2.287   0.0247 *  
-    ## bx9            4.1733     6.9507   0.600   0.5499    
-    ## bx10           3.0472     8.9555   0.340   0.7345    
-    ## bx11          40.2910    19.4769   2.069   0.0417 *  
-    ## bx12        -134.5647    67.4670  -1.995   0.0494 *  
-    ## bx13               NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.179 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3215, Adjusted R-squared:  0.2234 
-    ## F-statistic: 3.277 on 12 and 83 DF,  p-value: 0.0006648
-    ## 
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.2695 -3.8362 -0.9797  3.7794 12.2347 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##             Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  15.0635     5.1790   2.909 0.004657 ** 
-    ## bx1          -0.3342     7.3241  -0.046 0.963713    
-    ## bx2         -11.1257    46.3282  -0.240 0.810805    
-    ## bx3          19.3891    10.9284   1.774 0.079699 .  
-    ## bx4          24.8862     6.5748   3.785 0.000289 ***
-    ## bx5          25.0790     6.0598   4.139 8.34e-05 ***
-    ## bx6          21.9787     6.0681   3.622 0.000502 ***
-    ## bx7          13.8378     6.1742   2.241 0.027679 *  
-    ## bx8          20.9280     6.3595   3.291 0.001468 ** 
-    ## bx9           8.7553     6.9508   1.260 0.211342    
-    ## bx10          9.4780     8.9557   1.058 0.292979    
-    ## bx11         13.7603    19.4772   0.706 0.481865    
-    ## bx12        -52.2332    67.4678  -0.774 0.441015    
-    ## bx13              NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.179 on 83 degrees of freedom
-    ## Multiple R-squared:  0.5848, Adjusted R-squared:  0.5248 
-    ## F-statistic: 9.742 on 12 and 83 DF,  p-value: 1.553e-11
-
-``` r
 explo.plot(myexpGCbias.filt, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](images/cookingRNASeq/gc.bias.filt.png)
 
 Although the p-values are significant, R² values are not high enough for
 us to be able to confidently say there exists a GC content bias.
@@ -950,37 +717,31 @@ par(cex = 0.75)
 explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "scores")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](images/cookingRNASeq/pca.scores.filt.png)
 
 ``` r
 explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "loadings")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-26-2.png)<!-- -->
-
-``` r
-explo.plot(myexpPCA, factor = "barcodes.condition")
-```
-
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-26-3.png)<!-- -->
+![](images/cookingRNASeq/pca.loadings.filt.png)
 
 ``` r
 explo.plot(myexpPCA, factor = "barcodes.tss")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-26-4.png)<!-- -->
+![](images/cookingRNASeq/pca.tss.png)
 
 ``` r
 explo.plot(myexpPCA, factor = "barcodes.portion")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-26-5.png)<!-- -->
+![](images/cookingRNASeq/pca.portion.png)
 
 ``` r
 explo.plot(myexpPCA, factor = "barcodes.plate")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-26-6.png)<!-- -->
+![](images/cookingRNASeq/pca.plate.png)
 
 We can appreciate in these plots that **none of the factors (TSS,
 portion, plate) seem to be contributing towards batch effect** in our
@@ -996,29 +757,7 @@ Prepare gene information for filtered data: GC content and length.
 ``` r
 load("data/cooked/RNA-Seq/RNA.filt.rda")
 library(cqn)
-```
 
-    ## Loading required package: mclust
-
-    ## Package 'mclust' version 5.4.10
-    ## Type 'citation("mclust")' for citing this R package in publications.
-
-    ## Loading required package: nor1mix
-
-    ## Loading required package: preprocessCore
-
-    ## Loading required package: quantreg
-
-    ## Loading required package: SparseM
-
-    ## 
-    ## Attaching package: 'SparseM'
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     backsolve
-
-``` r
 # GeneLengthAndGCContent <- getGeneLengthAndGCContent(sub('\\.[0-9]*$', '', rownames(rna.filt.counts)), "hsa")
 
 # we need to delete the genes for which we have no information, after trying to download it using organism-based annotation packages from Bioconductor instead of the biomart package
@@ -1114,161 +853,21 @@ myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes
 rownames(rna.cqn.norm.expression) <- sub('\\.[0-9]*$', '', rownames(rna.cqn.norm.expression))
 
 myexpdata.norm <- NOISeq::readData(data = rna.cqn.norm.expression, factors = myfactors, length = mylength.norm, gc = mygc.norm, biotype = mybiotypes.norm, chromosome = mychroms.norm)
-
-myexplengthbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "lengthbias")
 ```
 
-    ## [1] "Length bias detection information is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -7.5776 -1.5879 -0.0566  1.5353  5.7054 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  5.421e+01  2.711e+00  20.000   <2e-16 ***
-    ## bx1         -7.863e+00  3.371e+00  -2.333   0.0221 *  
-    ## bx2         -1.788e-01  3.358e+00  -0.053   0.9577    
-    ## bx3         -7.465e+00  3.215e+00  -2.322   0.0227 *  
-    ## bx4         -4.028e-01  3.084e+00  -0.131   0.8964    
-    ## bx5         -4.088e-01  3.176e+00  -0.129   0.8979    
-    ## bx6         -1.534e+00  3.501e+00  -0.438   0.6624    
-    ## bx7          3.613e+00  4.222e+00   0.856   0.3946    
-    ## bx8         -8.052e-01  6.386e+00  -0.126   0.9000    
-    ## bx9         -4.126e+00  1.576e+01  -0.262   0.7942    
-    ## bx10        -1.272e+01  9.016e+01  -0.141   0.8881    
-    ## bx11         3.266e+03  1.437e+04   0.227   0.8208    
-    ## bx12        -3.662e+05  1.538e+06  -0.238   0.8124    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 2.711 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3752, Adjusted R-squared:  0.2849 
-    ## F-statistic: 4.154 on 12 and 83 DF,  p-value: 4.424e-05
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -7.943 -1.693  0.000  1.546  6.853 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  5.451e+01  2.605e+00  20.929  < 2e-16 ***
-    ## bx1         -7.244e+00  3.239e+00  -2.237  0.02800 *  
-    ## bx2         -1.672e-01  3.227e+00  -0.052  0.95879    
-    ## bx3         -8.681e+00  3.090e+00  -2.810  0.00618 ** 
-    ## bx4         -5.138e-01  2.964e+00  -0.173  0.86279    
-    ## bx5         -6.853e-01  3.052e+00  -0.225  0.82289    
-    ## bx6         -1.986e+00  3.364e+00  -0.590  0.55662    
-    ## bx7          2.571e+00  4.057e+00   0.634  0.52811    
-    ## bx8          2.101e-01  6.137e+00   0.034  0.97278    
-    ## bx9         -1.199e+01  1.515e+01  -0.792  0.43078    
-    ## bx10         2.925e+01  8.663e+01   0.338  0.73652    
-    ## bx11        -3.648e+03  1.381e+04  -0.264  0.79225    
-    ## bx12         3.763e+05  1.478e+06   0.255  0.79968    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 2.605 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3981, Adjusted R-squared:  0.3111 
-    ## F-statistic: 4.575 on 12 and 83 DF,  p-value: 1.239e-05
-
 ``` r
+myexplengthbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](images/cookingRNASeq/length.bias.cqn.norm.png)
 
 ``` r
 myexpGCbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "GCbias")
-```
-
-    ## [1] "GC content bias detection is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -5.9379 -1.7032 -0.0521  1.6032  7.9678 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  5.404e+01  2.957e+00  18.280   <2e-16 ***
-    ## bx1         -5.835e+00  4.181e+00  -1.395    0.167    
-    ## bx2         -1.241e+05  1.466e+05  -0.847    0.400    
-    ## bx3         -9.693e+00  4.806e+01  -0.202    0.841    
-    ## bx4         -1.068e+00  6.610e+00  -0.162    0.872    
-    ## bx5         -3.735e+00  3.814e+00  -0.979    0.330    
-    ## bx6         -3.385e+00  3.445e+00  -0.983    0.329    
-    ## bx7         -9.182e-01  3.429e+00  -0.268    0.790    
-    ## bx8         -2.114e+00  3.492e+00  -0.605    0.547    
-    ## bx9         -8.175e-01  3.678e+00  -0.222    0.825    
-    ## bx10         2.300e+00  4.366e+00   0.527    0.600    
-    ## bx11        -7.029e+00  8.295e+00  -0.847    0.399    
-    ## bx12         1.347e+01  2.779e+01   0.485    0.629    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 2.957 on 83 degrees of freedom
-    ## Multiple R-squared:  0.2071, Adjusted R-squared:  0.09246 
-    ## F-statistic: 1.807 on 12 and 83 DF,  p-value: 0.06018
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -5.9784 -1.6087 -0.1225  1.8632  8.2608 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  5.284e+01  2.947e+00  17.931   <2e-16 ***
-    ## bx1         -7.056e+00  4.168e+00  -1.693   0.0942 .  
-    ## bx2         -1.066e+05  1.461e+05  -0.730   0.4677    
-    ## bx3         -1.640e+01  4.791e+01  -0.342   0.7330    
-    ## bx4          1.461e+00  6.589e+00   0.222   0.8250    
-    ## bx5         -3.395e+00  3.802e+00  -0.893   0.3744    
-    ## bx6         -1.952e+00  3.434e+00  -0.569   0.5712    
-    ## bx7         -6.961e-02  3.419e+00  -0.020   0.9838    
-    ## bx8         -1.078e-01  3.481e+00  -0.031   0.9754    
-    ## bx9         -4.314e-02  3.666e+00  -0.012   0.9906    
-    ## bx10         1.984e+00  4.352e+00   0.456   0.6497    
-    ## bx11        -2.042e+00  8.269e+00  -0.247   0.8055    
-    ## bx12         4.872e+00  2.770e+01   0.176   0.8608    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 2.947 on 83 degrees of freedom
-    ## Multiple R-squared:  0.2195, Adjusted R-squared:  0.1066 
-    ## F-statistic: 1.945 on 12 and 83 DF,  p-value: 0.04024
-
-``` r
 explo.plot(myexpGCbias.norm, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-29-2.png)<!-- -->
-
-GC content and length biases have significantly improved, to the point
-where it’s almost gone. What about PCAs? Is there such good separation
-between tumor and control samples still?
+![](images/cookingRNASeq/gc.bias.cqn.norm.png)
 
 ``` r
 myexpPCA.norm = dat(myexpdata.norm, type = "PCA", norm = TRUE, logtransf = TRUE)
@@ -1276,19 +875,23 @@ par(cex = 0.75)
 explo.plot(myexpPCA.norm, factor = "barcodes.condition", plottype = "scores")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+![](images/cookingRNASeq/pca.scores.cqn.norm.png)
 
 ``` r
 explo.plot(myexpPCA.norm, factor = "barcodes.condition", plottype = "loadings")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-30-2.png)<!-- -->
+![](images/cookingRNASeq/pca.loadings.cqn.norm.png)
 
 ``` r
 boxplot(rna.cqn.norm.expression[, 1:50], outline = FALSE, las = 2)
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-30-3.png)<!-- -->
+![](images/cookingRNASeq/boxplot.cqn.norm.png)
+
+GC content and length biases have significantly improved, to the point
+where it’s almost gone. What about PCAs? Is there such good separation
+between tumor and control samples still?
 
 We can also assess the effect of normalization with some in-built `cqn`
 functions.
@@ -1313,14 +916,18 @@ plot(A.std, M.std, cex = 0.5, pch = 16, xlab = "A", ylab = "M",
 plot(A.cqn, M.cqn, cex = 0.5, pch = 16, xlab = "A", ylab = "M", 
      main = "CQN normalized RPKM", ylim = c(-4,4), xlim = c(0,12), 
      col = alpha("black", 0.25))
+```
 
+![](images/cookingRNASeq/rpkm.cqn.norm.png)
+
+``` r
 # We can plot the effect of GC and length
 par(mfrow=c(1,2))
 cqnplot(rna.cqn.norm, n = 1, xlab = "GC content", lty = 1, ylim = c(1,7))
 cqnplot(rna.cqn.norm, n = 2, xlab = "length", lty = 1, ylim = c(1,7))
 ```
 
-![](images/cookingRNASeq/rpkm.cqn.norm.png)
+![](images/cookingRNASeq/cqnplot.png)
 
 ## EDASeq
 
@@ -1399,461 +1006,49 @@ myexpdata.norm.eda.gc <- NOISeq::readData(data = rna.eda.counts.gc, factors = my
 myexpdata.norm.eda.gc.length <- NOISeq::readData(data = rna.eda.counts.gc.length, factors = myfactors, length = mylength.norm, gc = mygc.norm)
 
 myexpdata.norm.eda.length.gc <- NOISeq::readData(data = rna.eda.counts.length.gc, factors = myfactors, length = mylength.norm, gc = mygc.norm)
-
-myexplengthbias.norm.eda.gc = dat(myexpdata.norm.eda.gc, factor = "barcodes.condition", type = "lengthbias")
 ```
 
-    ## [1] "Length bias detection information is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.4675 -2.7158 -0.8146  2.5678 11.2775 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  6.929e+01  4.630e+00  14.966  < 2e-16 ***
-    ## bx1         -6.707e+01  5.757e+00 -11.650  < 2e-16 ***
-    ## bx2         -5.920e+01  5.736e+00 -10.322  < 2e-16 ***
-    ## bx3         -4.593e+01  5.491e+00  -8.363 1.23e-12 ***
-    ## bx4         -3.204e+01  5.268e+00  -6.083 3.48e-08 ***
-    ## bx5         -2.391e+01  5.425e+00  -4.408 3.10e-05 ***
-    ## bx6         -2.107e+01  5.979e+00  -3.524 0.000694 ***
-    ## bx7         -5.329e+00  7.211e+00  -0.739 0.461971    
-    ## bx8         -1.255e+01  1.091e+01  -1.150 0.253342    
-    ## bx9         -8.884e+00  2.692e+01  -0.330 0.742242    
-    ## bx10        -3.372e+01  1.540e+02  -0.219 0.827205    
-    ## bx11         8.922e+03  2.454e+04   0.364 0.717098    
-    ## bx12        -1.002e+06  2.627e+06  -0.381 0.703929    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.63 on 83 degrees of freedom
-    ## Multiple R-squared:  0.9282, Adjusted R-squared:  0.9178 
-    ## F-statistic: 89.44 on 12 and 83 DF,  p-value: < 2.2e-16
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.2811 -2.7406 -0.4441  2.1885 10.2236 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  5.958e+01  4.335e+00  13.745  < 2e-16 ***
-    ## bx1         -5.512e+01  5.390e+00 -10.225 2.35e-16 ***
-    ## bx2         -4.737e+01  5.370e+00  -8.821 1.49e-13 ***
-    ## bx3         -3.137e+01  5.141e+00  -6.102 3.20e-08 ***
-    ## bx4         -2.196e+01  4.932e+00  -4.452 2.62e-05 ***
-    ## bx5         -1.344e+01  5.079e+00  -2.647  0.00972 ** 
-    ## bx6         -1.294e+01  5.598e+00  -2.311  0.02332 *  
-    ## bx7          2.055e+00  6.752e+00   0.304  0.76157    
-    ## bx8         -6.231e+00  1.021e+01  -0.610  0.54341    
-    ## bx9          9.751e+00  2.521e+01   0.387  0.69986    
-    ## bx10        -1.234e+02  1.442e+02  -0.856  0.39466    
-    ## bx11         2.476e+04  2.298e+04   1.078  0.28437    
-    ## bx12        -2.698e+06  2.459e+06  -1.097  0.27581    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.335 on 83 degrees of freedom
-    ## Multiple R-squared:  0.9202, Adjusted R-squared:  0.9087 
-    ## F-statistic: 79.78 on 12 and 83 DF,  p-value: < 2.2e-16
-
 ``` r
+myexplengthbias.norm.eda.gc = dat(myexpdata.norm.eda.gc, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm.eda.gc, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](images/cookingRNASeq/length.bias.eda.gc.norm.png)
 
 ``` r
 myexplengthbias.norm.eda.gc.length = dat(myexpdata.norm.eda.gc.length, factor = "barcodes.condition", type = "lengthbias")
-```
-
-    ## [1] "Length bias detection information is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##      Min       1Q   Median       3Q      Max 
-    ## -13.9483  -3.6168  -0.1792   4.0378  11.4367 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  3.835e+01  5.499e+00   6.974 6.87e-10 ***
-    ## bx1         -1.799e+01  6.838e+00  -2.631   0.0102 *  
-    ## bx2          3.674e+00  6.813e+00   0.539   0.5911    
-    ## bx3         -6.511e+00  6.523e+00  -0.998   0.3210    
-    ## bx4         -2.549e+00  6.257e+00  -0.407   0.6848    
-    ## bx5         -4.040e+00  6.444e+00  -0.627   0.5324    
-    ## bx6         -5.624e+00  7.102e+00  -0.792   0.4307    
-    ## bx7          1.110e+00  8.565e+00   0.130   0.8972    
-    ## bx8         -1.164e+01  1.296e+01  -0.898   0.3716    
-    ## bx9          7.933e+00  3.198e+01   0.248   0.8047    
-    ## bx10        -7.415e+01  1.829e+02  -0.405   0.6862    
-    ## bx11         1.356e+04  2.915e+04   0.465   0.6431    
-    ## bx12        -1.473e+06  3.120e+06  -0.472   0.6380    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.499 on 83 degrees of freedom
-    ## Multiple R-squared:  0.1629, Adjusted R-squared:  0.04188 
-    ## F-statistic: 1.346 on 12 and 83 DF,  p-value: 0.2091
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -13.182  -3.344   0.000   2.633  10.801 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  3.396e+01  5.116e+00   6.638 3.06e-09 ***
-    ## bx1         -1.327e+01  6.361e+00  -2.086    0.040 *  
-    ## bx2          1.021e+01  6.338e+00   1.610    0.111    
-    ## bx3         -1.482e+00  6.068e+00  -0.244    0.808    
-    ## bx4          2.840e+00  5.821e+00   0.488    0.627    
-    ## bx5          2.450e+00  5.994e+00   0.409    0.684    
-    ## bx6         -9.344e-01  6.607e+00  -0.141    0.888    
-    ## bx7          6.702e+00  7.968e+00   0.841    0.403    
-    ## bx8         -5.640e+00  1.205e+01  -0.468    0.641    
-    ## bx9          2.094e+01  2.975e+01   0.704    0.483    
-    ## bx10        -1.380e+02  1.701e+02  -0.811    0.420    
-    ## bx11         2.518e+04  2.711e+04   0.929    0.356    
-    ## bx12        -2.722e+06  2.903e+06  -0.938    0.351    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.116 on 83 degrees of freedom
-    ## Multiple R-squared:  0.2013, Adjusted R-squared:  0.08588 
-    ## F-statistic: 1.744 on 12 and 83 DF,  p-value: 0.07199
-
-``` r
 explo.plot(myexplengthbias.norm.eda.gc.length, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-33-2.png)<!-- -->
+![](images/cookingRNASeq/length.bias.eda.gc.length.norm.png)
 
 ``` r
 myexplengthbias.norm.eda.length.gc = dat(myexpdata.norm.eda.length.gc, factor = "barcodes.condition", type = "lengthbias")
-```
-
-    ## [1] "Length bias detection information is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.4675 -2.7158 -0.8146  2.5678 11.2775 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  6.929e+01  4.630e+00  14.966  < 2e-16 ***
-    ## bx1         -6.707e+01  5.757e+00 -11.650  < 2e-16 ***
-    ## bx2         -5.920e+01  5.736e+00 -10.322  < 2e-16 ***
-    ## bx3         -4.593e+01  5.491e+00  -8.363 1.23e-12 ***
-    ## bx4         -3.204e+01  5.268e+00  -6.083 3.48e-08 ***
-    ## bx5         -2.391e+01  5.425e+00  -4.408 3.10e-05 ***
-    ## bx6         -2.107e+01  5.979e+00  -3.524 0.000694 ***
-    ## bx7         -5.329e+00  7.211e+00  -0.739 0.461971    
-    ## bx8         -1.255e+01  1.091e+01  -1.150 0.253342    
-    ## bx9         -8.884e+00  2.692e+01  -0.330 0.742242    
-    ## bx10        -3.372e+01  1.540e+02  -0.219 0.827205    
-    ## bx11         8.922e+03  2.454e+04   0.364 0.717098    
-    ## bx12        -1.002e+06  2.627e+06  -0.381 0.703929    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.63 on 83 degrees of freedom
-    ## Multiple R-squared:  0.9282, Adjusted R-squared:  0.9178 
-    ## F-statistic: 89.44 on 12 and 83 DF,  p-value: < 2.2e-16
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.2811 -2.7406 -0.4441  2.1885 10.2236 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  5.958e+01  4.335e+00  13.745  < 2e-16 ***
-    ## bx1         -5.512e+01  5.390e+00 -10.225 2.35e-16 ***
-    ## bx2         -4.737e+01  5.370e+00  -8.821 1.49e-13 ***
-    ## bx3         -3.137e+01  5.141e+00  -6.102 3.20e-08 ***
-    ## bx4         -2.196e+01  4.932e+00  -4.452 2.62e-05 ***
-    ## bx5         -1.344e+01  5.079e+00  -2.647  0.00972 ** 
-    ## bx6         -1.294e+01  5.598e+00  -2.311  0.02332 *  
-    ## bx7          2.055e+00  6.752e+00   0.304  0.76157    
-    ## bx8         -6.231e+00  1.021e+01  -0.610  0.54341    
-    ## bx9          9.751e+00  2.521e+01   0.387  0.69986    
-    ## bx10        -1.234e+02  1.442e+02  -0.856  0.39466    
-    ## bx11         2.476e+04  2.298e+04   1.078  0.28437    
-    ## bx12        -2.698e+06  2.459e+06  -1.097  0.27581    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.335 on 83 degrees of freedom
-    ## Multiple R-squared:  0.9202, Adjusted R-squared:  0.9087 
-    ## F-statistic: 79.78 on 12 and 83 DF,  p-value: < 2.2e-16
-
-``` r
 explo.plot(myexplengthbias.norm.eda.length.gc, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-33-3.png)<!-- -->
+![](images/cookingRNASeq/length.bias.eda.length.gc.norm.png)
 
 ``` r
 myexpGCbias.norm.eda.gc = dat(myexpdata.norm.eda.gc, factor = "barcodes.condition", type = "GCbias")
-```
-
-    ## [1] "GC content bias detection is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.2847 -3.3725 -0.0145  3.2944 11.5736 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  1.651e+01  5.106e+00   3.233 0.001759 ** 
-    ## bx1          5.885e-01  7.221e+00   0.081 0.935249    
-    ## bx2         -2.519e+05  2.532e+05  -0.995 0.322703    
-    ## bx3         -1.644e+01  8.301e+01  -0.198 0.843510    
-    ## bx4          3.062e+01  1.142e+01   2.682 0.008832 ** 
-    ## bx5          1.567e+01  6.587e+00   2.379 0.019644 *  
-    ## bx6          1.837e+01  5.950e+00   3.088 0.002743 ** 
-    ## bx7          1.750e+01  5.923e+00   2.954 0.004077 ** 
-    ## bx8          1.883e+01  6.031e+00   3.123 0.002465 ** 
-    ## bx9          1.559e+01  6.352e+00   2.454 0.016202 *  
-    ## bx10         2.803e+01  7.541e+00   3.717 0.000365 ***
-    ## bx11         8.337e+00  1.433e+01   0.582 0.562210    
-    ## bx12        -1.854e+01  4.800e+01  -0.386 0.700371    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.106 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3476, Adjusted R-squared:  0.2533 
-    ## F-statistic: 3.685 on 12 and 83 DF,  p-value: 0.0001867
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.1432 -3.3805 -0.2663  2.6766 13.9162 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  1.973e+01  4.730e+00   4.170 7.45e-05 ***
-    ## bx1         -2.654e+00  6.690e+00  -0.397  0.69260    
-    ## bx2         -2.349e+05  2.346e+05  -1.001  0.31964    
-    ## bx3         -3.574e+01  7.690e+01  -0.465  0.64327    
-    ## bx4          3.046e+01  1.057e+01   2.880  0.00506 ** 
-    ## bx5          1.503e+01  6.102e+00   2.464  0.01582 *  
-    ## bx6          1.503e+01  5.512e+00   2.727  0.00780 ** 
-    ## bx7          1.594e+01  5.487e+00   2.904  0.00472 ** 
-    ## bx8          1.615e+01  5.587e+00   2.890  0.00491 ** 
-    ## bx9          1.378e+01  5.884e+00   2.342  0.02159 *  
-    ## bx10         2.181e+01  6.986e+00   3.122  0.00247 ** 
-    ## bx11         1.841e+01  1.327e+01   1.387  0.16917    
-    ## bx12        -3.709e+01  4.447e+01  -0.834  0.40660    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.73 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3763, Adjusted R-squared:  0.2862 
-    ## F-statistic: 4.174 on 12 and 83 DF,  p-value: 4.157e-05
-
-``` r
 explo.plot(myexpGCbias.norm.eda.gc, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-33-4.png)<!-- -->
+![](images/cookingRNASeq/gc.bias.eda.gc.norm.png)
 
 ``` r
 myexpGCbias.norm.eda.gc.length = dat(myexpdata.norm.eda.gc.length, factor = "barcodes.condition", type = "GCbias")
-```
-
-    ## [1] "GC content bias detection is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.4852 -2.6388 -0.2761  2.4534 15.6686 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  2.352e+01  5.069e+00   4.640 1.29e-05 ***
-    ## bx1         -2.512e+00  7.168e+00  -0.350  0.72686    
-    ## bx2         -2.697e+05  2.513e+05  -1.073  0.28644    
-    ## bx3          5.133e+01  8.240e+01   0.623  0.53498    
-    ## bx4         -5.192e+00  1.133e+01  -0.458  0.64800    
-    ## bx5          1.213e+01  6.538e+00   1.855  0.06720 .  
-    ## bx6          1.033e+01  5.906e+00   1.749  0.08390 .  
-    ## bx7          1.714e+01  5.880e+00   2.915  0.00457 ** 
-    ## bx8          1.049e+01  5.986e+00   1.752  0.08339 .  
-    ## bx9          1.577e+01  6.305e+00   2.502  0.01432 *  
-    ## bx10         1.101e+01  7.486e+00   1.471  0.14519    
-    ## bx11         9.060e-01  1.422e+01   0.064  0.94935    
-    ## bx12        -6.912e+00  4.765e+01  -0.145  0.88500    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.069 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3964, Adjusted R-squared:  0.3092 
-    ## F-statistic: 4.543 on 12 and 83 DF,  p-value: 1.363e-05
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -8.8146 -2.5281 -0.3515  1.7843 16.9397 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  3.173e+01  4.753e+00   6.675  2.6e-09 ***
-    ## bx1         -1.308e+01  6.722e+00  -1.945   0.0551 .  
-    ## bx2         -2.924e+05  2.357e+05  -1.240   0.2183    
-    ## bx3          5.297e+01  7.727e+01   0.686   0.4949    
-    ## bx4         -1.619e+01  1.063e+01  -1.524   0.1314    
-    ## bx5          4.235e+00  6.132e+00   0.691   0.4917    
-    ## bx6         -4.048e-01  5.539e+00  -0.073   0.9419    
-    ## bx7          9.094e+00  5.514e+00   1.649   0.1029    
-    ## bx8          4.877e+00  5.614e+00   0.869   0.3875    
-    ## bx9          1.012e+01  5.913e+00   1.712   0.0906 .  
-    ## bx10         9.907e+00  7.020e+00   1.411   0.1619    
-    ## bx11         9.378e+00  1.334e+01   0.703   0.4839    
-    ## bx12        -2.166e+01  4.468e+01  -0.485   0.6291    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.753 on 83 degrees of freedom
-    ## Multiple R-squared:  0.5297, Adjusted R-squared:  0.4616 
-    ## F-statistic: 7.789 on 12 and 83 DF,  p-value: 1.712e-09
-
-``` r
 explo.plot(myexpGCbias.norm.eda.gc.length, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-33-5.png)<!-- -->
+![](images/cookingRNASeq/gc.bias.eda.gc.length.norm.png)
 
 ``` r
 myexpGCbias.norm.eda.length.gc = dat(myexpdata.norm.eda.length.gc, factor = "barcodes.condition", type = "GCbias")
-```
-
-    ## [1] "GC content bias detection is to be computed for:"
-    ## [1] "normal" "cancer"
-    ## [1] "normal"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.2847 -3.3725 -0.0145  3.2944 11.5736 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  1.651e+01  5.106e+00   3.233 0.001759 ** 
-    ## bx1          5.885e-01  7.221e+00   0.081 0.935249    
-    ## bx2         -2.519e+05  2.532e+05  -0.995 0.322703    
-    ## bx3         -1.644e+01  8.301e+01  -0.198 0.843510    
-    ## bx4          3.062e+01  1.142e+01   2.682 0.008832 ** 
-    ## bx5          1.567e+01  6.587e+00   2.379 0.019644 *  
-    ## bx6          1.837e+01  5.950e+00   3.088 0.002743 ** 
-    ## bx7          1.750e+01  5.923e+00   2.954 0.004077 ** 
-    ## bx8          1.883e+01  6.031e+00   3.123 0.002465 ** 
-    ## bx9          1.559e+01  6.352e+00   2.454 0.016202 *  
-    ## bx10         2.803e+01  7.541e+00   3.717 0.000365 ***
-    ## bx11         8.337e+00  1.433e+01   0.582 0.562210    
-    ## bx12        -1.854e+01  4.800e+01  -0.386 0.700371    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 5.106 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3476, Adjusted R-squared:  0.2533 
-    ## F-statistic: 3.685 on 12 and 83 DF,  p-value: 0.0001867
-    ## 
-    ## [1] "cancer"
-    ## 
-    ## Call:
-    ## lm(formula = datos[, i] ~ bx)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -9.1432 -3.3805 -0.2663  2.6766 13.9162 
-    ## 
-    ## Coefficients: (1 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  1.973e+01  4.730e+00   4.170 7.45e-05 ***
-    ## bx1         -2.654e+00  6.690e+00  -0.397  0.69260    
-    ## bx2         -2.349e+05  2.346e+05  -1.001  0.31964    
-    ## bx3         -3.574e+01  7.690e+01  -0.465  0.64327    
-    ## bx4          3.046e+01  1.057e+01   2.880  0.00506 ** 
-    ## bx5          1.503e+01  6.102e+00   2.464  0.01582 *  
-    ## bx6          1.503e+01  5.512e+00   2.727  0.00780 ** 
-    ## bx7          1.594e+01  5.487e+00   2.904  0.00472 ** 
-    ## bx8          1.615e+01  5.587e+00   2.890  0.00491 ** 
-    ## bx9          1.378e+01  5.884e+00   2.342  0.02159 *  
-    ## bx10         2.181e+01  6.986e+00   3.122  0.00247 ** 
-    ## bx11         1.841e+01  1.327e+01   1.387  0.16917    
-    ## bx12        -3.709e+01  4.447e+01  -0.834  0.40660    
-    ## bx13                NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 4.73 on 83 degrees of freedom
-    ## Multiple R-squared:  0.3763, Adjusted R-squared:  0.2862 
-    ## F-statistic: 4.174 on 12 and 83 DF,  p-value: 4.157e-05
-
-``` r
 explo.plot(myexpGCbias.norm.eda.length.gc, samples = NULL, toplot = "global")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-33-6.png)<!-- -->
+![](images/cookingRNASeq/gc.bias.eda.length.gc.norm.png)
 
 Length then GC normalization has the same effect as only GC
 normalization, leading me to think it’s not applying it properly. The
@@ -1873,19 +1068,19 @@ par(cex = 0.75)
 explo.plot(myexpPCA.norm.eda.gc, factor = "barcodes.condition", plottype = "scores")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](images/cookingRNASeq/pca.scores.eda.gc.norm.png)
 
 ``` r
 explo.plot(myexpPCA.norm.eda.gc, factor = "barcodes.condition", plottype = "loadings")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-2.png)<!-- -->
+![](images/cookingRNASeq/pca.loadings.eda.gc.norm.png)
 
 ``` r
 boxplot(log10(rna.eda.counts.gc.length[, 1:50])+1, outline = FALSE, las = 2)
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-3.png)<!-- -->
+![](images/cookingRNASeq/boxplot.eda.gc.norm.png)
 
 ``` r
 myexpPCA.norm.eda.gc.length = dat(myexpdata.norm.eda.gc.length, type = "PCA", norm = TRUE, logtransf = FALSE)
@@ -1893,19 +1088,19 @@ par(cex = 0.75)
 explo.plot(myexpPCA.norm.eda.gc.length, factor = "barcodes.condition", plottype = "scores")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-4.png)<!-- -->
+![](images/cookingRNASeq/pca.scores.eda.gc.length.norm.png)
 
 ``` r
 explo.plot(myexpPCA.norm.eda.gc.length, factor = "barcodes.condition", plottype = "loadings")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-5.png)<!-- -->
+![](images/cookingRNASeq/pca.loadings.eda.gc.length.norm.png)
 
 ``` r
 boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-6.png)<!-- -->
+![](images/cookingRNASeq/boxplot.eda.gc.length.norm.png)
 
 ``` r
 myexpPCA.norm.eda.length.gc = dat(myexpdata.norm.eda.length.gc, type = "PCA", norm = TRUE, logtransf = FALSE)
@@ -1913,19 +1108,19 @@ par(cex = 0.75)
 explo.plot(myexpPCA.norm.eda.length.gc, factor = "barcodes.condition", plottype = "scores")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-7.png)<!-- -->
+![](images/cookingRNASeq/pca.scores.eda.length.gc.norm.png)
 
 ``` r
 explo.plot(myexpPCA.norm.eda.length.gc, factor = "barcodes.condition", plottype = "loadings")
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-8.png)<!-- -->
+![](images/cookingRNASeq/pca.loadings.eda.length.gc.norm.png)
 
 ``` r
 boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
 ```
 
-![](cookingRNASeq_files/figure-gfm/unnamed-chunk-34-9.png)<!-- -->
+![](images/cookingRNASeq/boxplot.eda.length.gc.norm.png)
 
 # Analyzing differential expression
 
@@ -1977,8 +1172,8 @@ dds <- DESeq(dds)
 resultsNames(dds) # lists the coefficients
 # [1] "Intercept"                          
 # [2] "barcodes.condition_cancer_vs_normal"
-res <- results(dds, alpha = 0.05)
-summary(res)
+res.deseq2 <- results(dds, alpha = 0.05)
+summary(res.deseq2)
 ```
 
 ``` r
@@ -1994,12 +1189,12 @@ low counts [2]     : 0, 0%
 We’ll select as significant those genes with a p.adj \< 0.05 and a lFC
 \> 2 or lFC \< -2. We get a total of 1148 upregulated DEGs (a 6% of the
 filtered genes) in cancer samples, compared to normal ones; and 670
-downregulated DEGs (a 3.5% of the filtered genes), from a total of 19318
-filtered genes (originally 60660 genes in our raw data).
+downregulated DEGs (a 3.5% of the filtered genes), from a total of
+19,318 filtered genes (originally 60,660 genes in our raw data).
 
 ``` r
-log.fold.change <- res$log2FoldChange
-q.value <- res$padj
+log.fold.change <- res.deseq2$log2FoldChange
+q.value <- res.deseq2$padj
 genes.ids <- rownames(rna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
@@ -2036,38 +1231,8 @@ back the first one that occurs in the database. To add the gene symbol
 and Entrez ID, we call *mapIds* twice.
 
 ``` r
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-ens.str <- substr(rownames(res), 1, 15)
-res$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-res$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.deseq2 <- as.data.frame(activated.genes.deseq2)
-ens.str <- substr(activated.genes.deseq2$activated.genes.deseq2, 1, 15)
-activated.genes.deseq2$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.deseq2 <- na.omit(activated.genes.deseq2)
-
-repressed.genes.deseq2 <- as.data.frame(repressed.genes.deseq2)
-ens.str <- substr(repressed.genes.deseq2$repressed.genes.deseq2, 1, 15)
-repressed.genes.deseq2$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.deseq2 <- na.omit(repressed.genes.deseq2)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
 ```
 
 Some of the tested genes don’t have an Entrez ID associated with them
@@ -2086,7 +1251,7 @@ write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cooking
 
 write.table(repressed.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-resOrdered <- res[order(res$padj),]
+resOrdered <- res.deseq2[order(res.deseq2$padj),]
 head(resOrdered)
 resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
@@ -2122,11 +1287,11 @@ fit1 <- lmFit(rna.norm.expression, design)
 
 fit2 <- eBayes(fit1)
 
-top <- topTable(fit2, coef = 2, number = Inf)
+top.limma <- topTable(fit2, coef = 2, number = Inf)
 
-log.fold.change <- top$logFC
-q.value <- top$adj.P.Val
-genes.ids <- rownames(top)
+log.fold.change <- top.limma$logFC
+q.value <- top.limma$adj.P.Val
+genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
@@ -2152,44 +1317,14 @@ y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 save the results.
 
 ``` r
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-ens.str <- substr(rownames(top), 1, 15)
-top$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-top$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.limma <- as.data.frame(activated.genes.limma)
-ens.str <- substr(activated.genes.limma$activated.genes.limma, 1, 15)
-activated.genes.limma$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.limma <- na.omit(activated.genes.limma)
-
-repressed.genes.limma <- as.data.frame(repressed.genes.limma)
-ens.str <- substr(repressed.genes.limma$repressed.genes.limma, 1, 15)
-repressed.genes.limma$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.limma <- na.omit(repressed.genes.limma)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
 
 write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(repressed.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-topOrdered <- top[order(top$adj.P.Val),]
+topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
@@ -2256,11 +1391,11 @@ and returns all the DEGs (because I have set n=Inf).
 
 ``` r
 et <- exactTest(y) # performs pair-wise tests for differential expression between two groups
-top <- topTags(et, n = Inf) # takes the output from exactTest(), adjusts the raw p-values using the False Discovery Rate (FDR) correction, and returns the top differentially expressed genes
+top.edger <- topTags(et, n = Inf) # takes the output from exactTest(), adjusts the raw p-values using the False Discovery Rate (FDR) correction, and returns the top differentially expressed genes
 
-topSig <- top[top$table$FDR < 0.05, ] # we select DEGs with alpha=0.05
+topSig <- top.edger[top.edger$table$FDR < 0.05, ] # we select DEGs with alpha=0.05
 dim(topSig)
-topSig <- topSig[abs(top$table$logFC) >= 2, ] # we filter the output of dataDEGs by abs(LogFC) >=2
+topSig <- topSig[abs(top.edger$table$logFC) >= 2, ] # we filter the output of dataDEGs by abs(LogFC) >=2
 dim(topSig)
 
 # this is equivalent to doing
@@ -2289,9 +1424,9 @@ length(repressed.genes.edger) # 661
 ![](images/cookingRNASeq/plotsmear.edger.png)
 
 ``` r
-top <- top$table
-log.fold.change <- top$logFC
-q.value <- top$FDR
+top.edger <- top.edger$table
+log.fold.change <- top.edger$logFC
+q.value <- top.edger$FDR
 genes.ids <- rownames(rna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
@@ -2318,45 +1453,15 @@ upregulated genes and 661 downregulated genes.
 Again, let’s save the results.
 
 ``` r
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-top <- as.data.frame(top)
-ens.str <- substr(rownames(top), 1, 15)
-top$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-top$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.edger <- as.data.frame(activated.genes.edger)
-ens.str <- substr(activated.genes.edger$activated.genes.edger, 1, 15)
-activated.genes.edger$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.edger <- na.omit(activated.genes.edger)
-
-repressed.genes.edger <- as.data.frame(repressed.genes.edger)
-ens.str <- substr(repressed.genes.edger$repressed.genes.edger, 1, 15)
-repressed.genes.edger$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.edger <- na.omit(repressed.genes.edger)
+top.edger <- as.data.frame(top.edger)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
 
 write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(repressed.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-topOrdered <- top[order(top$FDR),]
+topOrdered <- top.edger[order(top.edger$FDR),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/edgeR.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
@@ -2400,5 +1505,5 @@ write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common
 | *Repressed* |  600   |  850   |  661   |  473   |
 |   *Total*   | *1588* | *1360* | *1495* | *925*  |
 
-We have 925 DEGs, a 4.8% of the filtered genes (19318) and a 1.5% of the
-original genes (60660).
+We have 925 DEGs, a 4.8% of the filtered genes (19,318) and a 1.5% of
+the original genes (60,660).

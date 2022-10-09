@@ -20,7 +20,7 @@ load("data/raw/RNA-Seq/RNA.rda")
 
 There are 3 functions that allow us to access the most important data present in `rna`: `colData()`, to access the clinical data; `rowRanges()`, to access information about the genes; and `assay`, for the raw counts.
 
-```{r}
+```{r, message = FALSE}
 library(TCGAbiolinks)
 library(SummarizedExperiment)
 
@@ -95,9 +95,13 @@ Before performing differential expression analysis, we should preprocess the raw
 
 We already have our expression data in `rna.raw.counts`, but we still have to define our factors as `condition`, `tss`, `plate`, `portion`and `sample`, which we can easily extract with the `TCGAbiolinks` function `get_IDs`.
 
-```{r}
+```{r, message = FALSE}
 library(NOISeq)
 library(TCGAbiolinks)
+```
+
+
+```{r}
 barcodes <- get_IDs(rna)
 myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
 head(myfactors)
@@ -152,7 +156,7 @@ head(mychroms)
 
 Once we have created the count data matrix, the data.frame for the factors and the 4 biological annotation objects, we have to pack all this information into a `NOISeq` object by using the `readData` function.
 
-```{r}
+```{r, eval = FALSE}
 mydata <- NOISeq::readData(data = rna.raw.counts, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 
 myfirst50data <- NOISeq::readData(data = rna.raw.counts[, 1:50], factors = myfactors[1:50, ], length = mylength[1:50], gc = mygc[1:50], biotype = mybiotypes[1:50], chromosome = mychroms[1:50, ]) # for plots and tests that require a smaller sample size
@@ -164,16 +168,17 @@ Excluding features with low counts improves differential expression results sinc
 
 But first, we'll explore the raw counts a bit to later help us choose a filtering method.
 
-```{r}
+```{r, eval = FALSE}
 boxplot(log10(rna.raw.counts[, 1:50])+1, outline = FALSE, las = 2)
 ```
-
+![](images/cookingRNASeq/boxplot.raw.png)
 
 ```{r, eval = FALSE}
 mybiodetection <- dat(mydata, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetection, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
 ```
+
 ![](images/cookingRNASeq/mybiodetection.png)
 
 
@@ -199,7 +204,7 @@ explo.plot(mycountsbio, toplot = 1, samples = NULL, plottype = "barplot")
 
 It can also help to visualize the log2(cpm) as histogram and density plots. In them we see a bimodal distribution that can be split with a filtering threshold of \~0.5. As a general rule, a good threshold can be chosen by identifying the CPM that corresponds to a count of 10. Our minimum library size is 19 millions, whereas median and mean are 57 millions and maximum is 114 million counts. An acceptable threshold would be between 10/19 = 0.52 and 10/57 = 0.18, so we will try 0.2, 0.5 and 1 as possible CPM thresholds.
 
-```{r}
+```{r, eval = FALSE}
 library(SummarizedExperiment)
 library(edgeR)
 library(limma)
@@ -213,7 +218,12 @@ ggplot() + aes(x=mean_log_cpm) +
     geom_histogram(binwidth=0.2) +
     geom_vline(xintercept=filter_threshold) +
     ggtitle("Histogram of logCPM before filtering")
+```
 
+![](images/cookingRNASeq/histogram.logCPM.png)
+
+
+```{r, eval = FALSE}
 ggplot() + aes(x=mean_log_cpm) +
     geom_density() +
     geom_vline(xintercept=filter_threshold) +
@@ -222,6 +232,8 @@ ggplot() + aes(x=mean_log_cpm) +
 
 summary(colSums(rna.raw.counts))
 ```
+
+![](images/cookingRNASeq/density.logCPM.png)
 
 So let's try CPM filtering with a `CPM threshold = 0.2, 0.5 and 1` and a `cv.cutoff = 500`, so that we remove those features with low expression (but not with low variability). We will also apply Wilcoxon test filtering and compare the results.
 
@@ -233,20 +245,33 @@ myfiltCPM05 <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.conditi
 myfiltCPM1 <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.condition, norm = FALSE, depth = NULL, method = 1, cv.cutoff = 500, cpm = 1, p.adj = "fdr") # 17276 features (28.5%) are to be kept for differential expression analysis with filtering method 1
 
 myfiltWilcoxon <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.condition, norm = FALSE, depth = NULL, method = 2, p.adj = "fdr") # 56401 (93%) features are to be kept for differential expression analysis with filtering method 2
+```
 
+
+```{r, eval=FALSE}
 boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2)
-boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2)
-boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2)
-boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2)
 ```
 
 ![CPM filtering with threshold = 0.2](images/cookingRNASeq/boxplot.filt.CPM.02.png)
 
+```{r, eval=FALSE}
+boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2)
+```
+
 ![CPM filtering with threshold = 0.5](images/cookingRNASeq/boxplot.filt.CPM.05.png)
+
+```{r, eval=FALSE}
+boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2)
+```
 
 ![CPM filtering with threshold = 1](images/cookingRNASeq/boxplot.filt.CPM.1.png)
 
-![CPM filtering with threshold = 0.2](images/cookingRNASeq/boxplot.filt.Wilcoxon.png)
+```{r, eval=FALSE}
+boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2)
+```
+
+![Wilcoxon filtering](images/cookingRNASeq/boxplot.filt.Wilcoxon.png)
+
 What kind of features are these methods filtering out?
 
 ```{r, eval=FALSE}
@@ -257,23 +282,42 @@ myCPMdata05 <- NOISeq::readData(data = myfiltCPM05, factors = myfactors, length 
 myCPMdata1 <- NOISeq::readData(data = myfiltCPM1, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 
 myWilcoxondata <- NOISeq::readData(data = myfiltWilcoxon, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
+```
 
+
+```{r, eval=FALSE}
 mybiodetectionCPM02 <- dat(myCPMdata02, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM02, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![CPM filtering with threshold = 0.2](images/cookingRNASeq/mybiodetection.CPM.02.png)
+
+```{r, eval=FALSE}
 mybiodetectionCPM05 <- dat(myCPMdata05, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM05, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![CPM filtering with threshold = 0.5](images/cookingRNASeq/mybiodetection.CPM.05.png)
+
+```{r, eval=FALSE}
 mybiodetectionCPM1 <- dat(myCPMdata1, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM1, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![CPM filtering with threshold = 1](images/cookingRNASeq/mybiodetection.CPM.1.png)
+
+```{r, eval=FALSE}
 mybiodetectionWilcoxon <- dat(myWilcoxondata, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionWilcoxon, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
+```
 
+![](images/cookingRNASeq/mybiodetection.Wilcoxon.png)
+
+```{r, eval=FALSE}
 sum(mydata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19916 protein coding genes
 sum(myCPMdata02@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 16021 protein coding genes
 sum(myCPMdata05@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 15434 protein coding genes
@@ -281,13 +325,6 @@ sum(myCPMdata1@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 14772 p
 sum(myWilcoxondata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19391 protein coding genes
 ```
 
-![CPM filtering with threshold = 0.2](images/cookingRNASeq/mybiodetection.CPM.02.png)
-
-![CPM filtering with threshold = 0.5](images/cookingRNASeq/mybiodetection.CPM.05.png)
-
-![CPM filtering with threshold = 1](images/cookingRNASeq/mybiodetection.CPM.1.png)
-
-![Wilcoxon filtering](images/cookingRNASeq/mybiodetection.Wilcoxon.png)
 
 Method 2 (Wilcoxon test) barely does any filtering at all, so we'll stick to method 1 (CPM). Given the amount of protein coding features we are left with with all the different thresholds, we'll choose a CPM threshold of 0.5 and will be left with only 32% of the original features. This makes sense, as the prefiltered raw counts had a large number of long non-coding RNAs and pseudogenes (which tend to have low expression in an organism) that were removed with the CPM filtering, enriching the counts in protein coding genes (going from \~70% to 85% of total biotypes).
 
@@ -318,10 +355,11 @@ What type of normalization should we use? In order to help us make a decision, w
 
 This plot describes the relationship between the feature length and the expression values.
 
-```{r}
+```{r, eval = FALSE}
 myexplengthbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.filt, samples = NULL, toplot = "global")
 ```
+![](images/cookingRNASeq/length.bias.filt.png)
 
 Since the p-values are significant (even though R^2^ coefficients aren't higher than 95%) and we can see in the graph that mean expression varies depending on feature length, we can conclude that the expression depends on the feature length and as such, a length-based normalization is required.
 
@@ -329,10 +367,11 @@ Since the p-values are significant (even though R^2^ coefficients aren't higher 
 
 This plot describes the relationship between the feature GC content and the expression values.
 
-```{r}
+```{r, eval = FALSE}
 myexpGCbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.filt, samples = NULL, toplot = "global")
 ```
+![](images/cookingRNASeq/gc.bias.filt.png)
 
 Although the p-values are significant, R² values are not high enough for us to be able to confidently say there exists a GC content bias. However, we will try a GC-content normalization as well, to try to remove this potential bias.
 
@@ -351,17 +390,37 @@ Since the test failed (median deviations of the samples with regard to the refer
 
 Are any of our factors producing some kind of batch effect?
 
-```{r}
+```{r, eval = FALSE}
 # PCAs with NOISeq
 myexpPCA = dat(myexpdata.filt, type = "PCA")
 par(cex = 0.75)
 explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "scores")
+```
+
+![](images/cookingRNASeq/pca.scores.filt.png)
+
+```{r, eval = FALSE}
 explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "loadings")
-explo.plot(myexpPCA, factor = "barcodes.condition")
+```
+
+![](images/cookingRNASeq/pca.loadings.filt.png)
+
+```{r, eval = FALSE}
 explo.plot(myexpPCA, factor = "barcodes.tss")
+```
+![](images/cookingRNASeq/pca.tss.png)
+
+```{r, eval = FALSE}
 explo.plot(myexpPCA, factor = "barcodes.portion")
+```
+
+![](images/cookingRNASeq/pca.portion.png)
+
+```{r, eval = FALSE}
 explo.plot(myexpPCA, factor = "barcodes.plate")
 ```
+
+![](images/cookingRNASeq/pca.plate.png)
 
 We can appreciate in these plots that **none of the factors (TSS, portion, plate) seem to be contributing towards batch effect** in our RNA-Seq data, but we shall repeat these plots once our data is normalized.
 
@@ -371,7 +430,7 @@ We can appreciate in these plots that **none of the factors (TSS, portion, plate
 
 Prepare gene information for filtered data: GC content and length.
 
-```{r}
+```{r, eval = FALSE}
 load("data/cooked/RNA-Seq/RNA.filt.rda")
 library(cqn)
 
@@ -437,7 +496,7 @@ rna.cqn.norm.expression <- as.data.frame(rna.cqn.norm.expression)
 
 Did `cqn` normalization reduce our gene length and GC content biases?
 
-```{r}
+```{r, eval = FALSE}
 load("reports/preprocessing/files/cookingRNASeq/RNA.cqn.norm.rda")
 rna.cqn.norm.expression <- rna.cqn.norm$y + rna.cqn.norm$offset
 rna.cqn.norm.expression <- as.data.frame(rna.cqn.norm.expression)
@@ -466,24 +525,43 @@ myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes
 rownames(rna.cqn.norm.expression) <- sub('\\.[0-9]*$', '', rownames(rna.cqn.norm.expression))
 
 myexpdata.norm <- NOISeq::readData(data = rna.cqn.norm.expression, factors = myfactors, length = mylength.norm, gc = mygc.norm, biotype = mybiotypes.norm, chromosome = mychroms.norm)
+```
 
+
+```{r, eval = FALSE}
 myexplengthbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm, samples = NULL, toplot = "global")
+```
 
+![](images/cookingRNASeq/length.bias.cqn.norm.png)
+
+```{r, eval = FALSE}
 myexpGCbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.norm, samples = NULL, toplot = "global")
 ```
+![](images/cookingRNASeq/gc.bias.cqn.norm.png)
 
-GC content and length biases have significantly improved, to the point where it's almost gone. What about PCAs? Is there such good separation between tumor and control samples still?
-
-```{r}
+```{r, eval = FALSE}
 myexpPCA.norm = dat(myexpdata.norm, type = "PCA", norm = TRUE, logtransf = TRUE)
 par(cex = 0.75)
 explo.plot(myexpPCA.norm, factor = "barcodes.condition", plottype = "scores")
-explo.plot(myexpPCA.norm, factor = "barcodes.condition", plottype = "loadings")
+```
 
+![](images/cookingRNASeq/pca.scores.cqn.norm.png)
+
+```{r, eval = FALSE}
+explo.plot(myexpPCA.norm, factor = "barcodes.condition", plottype = "loadings")
+```
+
+![](images/cookingRNASeq/pca.loadings.cqn.norm.png)
+
+```{r, eval = FALSE}
 boxplot(rna.cqn.norm.expression[, 1:50], outline = FALSE, las = 2)
 ```
+
+![](images/cookingRNASeq/boxplot.cqn.norm.png)
+
+GC content and length biases have significantly improved, to the point where it's almost gone. What about PCAs? Is there such good separation between tumor and control samples still?
 
 We can also assess the effect of normalization with some in-built `cqn` functions.
 
@@ -507,14 +585,18 @@ plot(A.std, M.std, cex = 0.5, pch = 16, xlab = "A", ylab = "M",
 plot(A.cqn, M.cqn, cex = 0.5, pch = 16, xlab = "A", ylab = "M", 
      main = "CQN normalized RPKM", ylim = c(-4,4), xlim = c(0,12), 
      col = alpha("black", 0.25))
+```
 
+![](images/cookingRNASeq/rpkm.cqn.norm.png)
+
+```{r, eval = FALSE}
 # We can plot the effect of GC and length
 par(mfrow=c(1,2))
 cqnplot(rna.cqn.norm, n = 1, xlab = "GC content", lty = 1, ylim = c(1,7))
 cqnplot(rna.cqn.norm, n = 2, xlab = "length", lty = 1, ylim = c(1,7))
 ```
 
-![](images/cookingRNASeq/rpkm.cqn.norm.png)
+![](images/cookingRNASeq/cqnplot.png)
 
 ## EDASeq
 
@@ -557,7 +639,7 @@ save(rna.eda.norm.length.gc, file = "reports/preprocessing/files/cookingRNASeq/R
 
 Did `EDASeq` normalization reduce our gene length and GC content biases?
 
-```{r}
+```{r, eval = FALSE}
 load("reports/preprocessing/files/cookingRNASeq/RNA.eda.GC.norm.rda")
 load("reports/preprocessing/files/cookingRNASeq/RNA.eda.GC.length.norm.rda")
 load("reports/preprocessing/files/cookingRNASeq/RNA.eda.length.GC.norm.rda")
@@ -579,53 +661,115 @@ myexpdata.norm.eda.gc <- NOISeq::readData(data = rna.eda.counts.gc, factors = my
 myexpdata.norm.eda.gc.length <- NOISeq::readData(data = rna.eda.counts.gc.length, factors = myfactors, length = mylength.norm, gc = mygc.norm)
 
 myexpdata.norm.eda.length.gc <- NOISeq::readData(data = rna.eda.counts.length.gc, factors = myfactors, length = mylength.norm, gc = mygc.norm)
+```
 
+
+```{r, eval = FALSE}
 myexplengthbias.norm.eda.gc = dat(myexpdata.norm.eda.gc, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm.eda.gc, samples = NULL, toplot = "global")
+```
 
+![](images/cookingRNASeq/length.bias.eda.gc.norm.png)
+
+```{r, eval = FALSE}
 myexplengthbias.norm.eda.gc.length = dat(myexpdata.norm.eda.gc.length, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm.eda.gc.length, samples = NULL, toplot = "global")
+```
 
+![](images/cookingRNASeq/length.bias.eda.gc.length.norm.png)
+
+```{r, eval = FALSE}
 myexplengthbias.norm.eda.length.gc = dat(myexpdata.norm.eda.length.gc, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm.eda.length.gc, samples = NULL, toplot = "global")
+```
 
+![](images/cookingRNASeq/length.bias.eda.length.gc.norm.png)
+
+```{r, eval = FALSE}
 myexpGCbias.norm.eda.gc = dat(myexpdata.norm.eda.gc, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.norm.eda.gc, samples = NULL, toplot = "global")
+```
 
+![](images/cookingRNASeq/gc.bias.eda.gc.norm.png)
+
+```{r, eval = FALSE}
 myexpGCbias.norm.eda.gc.length = dat(myexpdata.norm.eda.gc.length, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.norm.eda.gc.length, samples = NULL, toplot = "global")
+```
 
+![](images/cookingRNASeq/gc.bias.eda.gc.length.norm.png)
+
+```{r, eval = FALSE}
 myexpGCbias.norm.eda.length.gc = dat(myexpdata.norm.eda.length.gc, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.norm.eda.length.gc, samples = NULL, toplot = "global")
 ```
+
+![](images/cookingRNASeq/gc.bias.eda.length.gc.norm.png)
 
 Length then GC normalization has the same effect as only GC normalization, leading me to think it's not
 applying it properly. The third option (length then GC normalization) is actually increasing length bias, so that one is out of the question. The second option (GC then length normalization) is the most interesting out of the three, but `cqn` does a better job for GC bias (while being pretty comparable on length bias), so we'll normalize our filtered RNA-Seq counts with `cqn` instead of with `EDASeq`.
 
 What about PCAs? Is there such good separation between tumor and control samples still?
 
-```{r}
+```{r, eval = FALSE}
 myexpPCA.norm.eda.gc = dat(myexpdata.norm.eda.gc, type = "PCA", norm = TRUE, logtransf = FALSE)
 par(cex = 0.75)
 explo.plot(myexpPCA.norm.eda.gc, factor = "barcodes.condition", plottype = "scores")
+```
+
+![](images/cookingRNASeq/pca.scores.eda.gc.norm.png)
+
+```{r, eval = FALSE}
 explo.plot(myexpPCA.norm.eda.gc, factor = "barcodes.condition", plottype = "loadings")
+```
 
+![](images/cookingRNASeq/pca.loadings.eda.gc.norm.png)
+
+```{r, eval = FALSE}
 boxplot(log10(rna.eda.counts.gc.length[, 1:50])+1, outline = FALSE, las = 2)
+```
 
+![](images/cookingRNASeq/boxplot.eda.gc.norm.png)
+
+```{r, eval = FALSE}
 myexpPCA.norm.eda.gc.length = dat(myexpdata.norm.eda.gc.length, type = "PCA", norm = TRUE, logtransf = FALSE)
 par(cex = 0.75)
 explo.plot(myexpPCA.norm.eda.gc.length, factor = "barcodes.condition", plottype = "scores")
+```
+
+![](images/cookingRNASeq/pca.scores.eda.gc.length.norm.png)
+
+```{r, eval = FALSE}
 explo.plot(myexpPCA.norm.eda.gc.length, factor = "barcodes.condition", plottype = "loadings")
+```
 
+![](images/cookingRNASeq/pca.loadings.eda.gc.length.norm.png)
+
+```{r, eval = FALSE}
 boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
+```
 
+![](images/cookingRNASeq/boxplot.eda.gc.length.norm.png)
+
+```{r, eval = FALSE}
 myexpPCA.norm.eda.length.gc = dat(myexpdata.norm.eda.length.gc, type = "PCA", norm = TRUE, logtransf = FALSE)
 par(cex = 0.75)
 explo.plot(myexpPCA.norm.eda.length.gc, factor = "barcodes.condition", plottype = "scores")
-explo.plot(myexpPCA.norm.eda.length.gc, factor = "barcodes.condition", plottype = "loadings")
+```
 
+![](images/cookingRNASeq/pca.scores.eda.length.gc.norm.png)
+
+```{r, eval = FALSE}
+explo.plot(myexpPCA.norm.eda.length.gc, factor = "barcodes.condition", plottype = "loadings")
+```
+
+![](images/cookingRNASeq/pca.loadings.eda.length.gc.norm.png)
+
+```{r, eval = FALSE}
 boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
 ```
+
+![](images/cookingRNASeq/boxplot.eda.length.gc.norm.png)
 
 # Analyzing differential expression
 
@@ -669,8 +813,8 @@ dds <- DESeq(dds)
 resultsNames(dds) # lists the coefficients
 # [1] "Intercept"                          
 # [2] "barcodes.condition_cancer_vs_normal"
-res <- results(dds, alpha = 0.05)
-summary(res)
+res.deseq2 <- results(dds, alpha = 0.05)
+summary(res.deseq2)
 ```
 
 ```{r, eval = FALSE}
@@ -683,11 +827,11 @@ low counts [2]     : 0, 0%
 (mean count < 3)
 ```
 
-We'll select as significant those genes with a p.adj < 0.05 and a lFC > 2 or lFC < -2. We get a total of 1148 upregulated DEGs (a 6% of the filtered genes) in cancer samples, compared to normal ones; and 670 downregulated DEGs (a 3.5% of the filtered genes), from a total of 19318 filtered genes (originally 60660 genes in our raw data).
+We'll select as significant those genes with a p.adj < 0.05 and a lFC > 2 or lFC < -2. We get a total of 1148 upregulated DEGs (a 6% of the filtered genes) in cancer samples, compared to normal ones; and 670 downregulated DEGs (a 3.5% of the filtered genes), from a total of 19,318 filtered genes (originally 60,660 genes in our raw data).
 
 ```{r, eval = FALSE}
-log.fold.change <- res$log2FoldChange
-q.value <- res$padj
+log.fold.change <- res.deseq2$log2FoldChange
+q.value <- res.deseq2$padj
 genes.ids <- rownames(rna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
@@ -713,38 +857,8 @@ y = log.q.val[repressed.genes.deseq2],col="blue",cex=0.8,pch=19)
 Our results table so far only contains the Ensembl gene IDs, but alternative gene names may be more informative for interpretation. Bioconductor's annotation packages help with mapping various ID schemes to each other. We load the `AnnotationDbi` package and the annotation package `org.Hs.eg.db`. We can use the *mapIds* function to add individual columns to our results table. We provide the row names of our results table as a key, and specify that `keytype=ENSEMBL`. The `column` argument tells the *mapIds* function which information we want, and the `multiVals` argument tells the function what to do if there are multiple possible values for a single input value. Here we ask to just give us back the first one that occurs in the database. To add the gene symbol and Entrez ID, we call *mapIds* twice.
 
 ```{r, eval = FALSE}
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-ens.str <- substr(rownames(res), 1, 15)
-res$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-res$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.deseq2 <- as.data.frame(activated.genes.deseq2)
-ens.str <- substr(activated.genes.deseq2$activated.genes.deseq2, 1, 15)
-activated.genes.deseq2$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.deseq2 <- na.omit(activated.genes.deseq2)
-
-repressed.genes.deseq2 <- as.data.frame(repressed.genes.deseq2)
-ens.str <- substr(repressed.genes.deseq2$repressed.genes.deseq2, 1, 15)
-repressed.genes.deseq2$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.deseq2 <- na.omit(repressed.genes.deseq2)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
 ```
 
 Some of the tested genes don't have an Entrez ID associated with them (whether because they've just been discovered or are hypothetical), so we'll omit those to make our life easier, leaving us with 17191 genes. Out of the 1148 activated genes we ended up with 988; and from the 670 supressed genes, we only have names for 600 of them.
@@ -756,7 +870,7 @@ write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cooking
 
 write.table(repressed.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-resOrdered <- res[order(res$padj),]
+resOrdered <- res.deseq2[order(res.deseq2$padj),]
 head(resOrdered)
 resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
@@ -787,11 +901,11 @@ fit1 <- lmFit(rna.norm.expression, design)
 
 fit2 <- eBayes(fit1)
 
-top <- topTable(fit2, coef = 2, number = Inf)
+top.limma <- topTable(fit2, coef = 2, number = Inf)
 
-log.fold.change <- top$logFC
-q.value <- top$adj.P.Val
-genes.ids <- rownames(top)
+log.fold.change <- top.limma$logFC
+q.value <- top.limma$adj.P.Val
+genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
@@ -816,44 +930,14 @@ y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 `limma` gives us 571 upregulated genes and 933 downregulated genes. We save the results.
 
 ```{r, eval = FALSE}
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-ens.str <- substr(rownames(top), 1, 15)
-top$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-top$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.limma <- as.data.frame(activated.genes.limma)
-ens.str <- substr(activated.genes.limma$activated.genes.limma, 1, 15)
-activated.genes.limma$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.limma <- na.omit(activated.genes.limma)
-
-repressed.genes.limma <- as.data.frame(repressed.genes.limma)
-ens.str <- substr(repressed.genes.limma$repressed.genes.limma, 1, 15)
-repressed.genes.limma$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.limma <- na.omit(repressed.genes.limma)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
 
 write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(repressed.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-topOrdered <- top[order(top$adj.P.Val),]
+topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
@@ -900,11 +984,11 @@ After adjusting the dispersion parameters, we have to adjust the model and perfo
 
 ```{r, eval = FALSE}
 et <- exactTest(y) # performs pair-wise tests for differential expression between two groups
-top <- topTags(et, n = Inf) # takes the output from exactTest(), adjusts the raw p-values using the False Discovery Rate (FDR) correction, and returns the top differentially expressed genes
+top.edger <- topTags(et, n = Inf) # takes the output from exactTest(), adjusts the raw p-values using the False Discovery Rate (FDR) correction, and returns the top differentially expressed genes
 
-topSig <- top[top$table$FDR < 0.05, ] # we select DEGs with alpha=0.05
+topSig <- top.edger[top.edger$table$FDR < 0.05, ] # we select DEGs with alpha=0.05
 dim(topSig)
-topSig <- topSig[abs(top$table$logFC) >= 2, ] # we filter the output of dataDEGs by abs(LogFC) >=2
+topSig <- topSig[abs(top.edger$table$logFC) >= 2, ] # we filter the output of dataDEGs by abs(LogFC) >=2
 dim(topSig)
 
 # this is equivalent to doing
@@ -933,9 +1017,9 @@ length(repressed.genes.edger) # 661
 ![](images/cookingRNASeq/plotsmear.edger.png)
 
 ```{r, eval = FALSE}
-top <- top$table
-log.fold.change <- top$logFC
-q.value <- top$FDR
+top.edger <- top.edger$table
+log.fold.change <- top.edger$logFC
+q.value <- top.edger$FDR
 genes.ids <- rownames(rna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
@@ -961,50 +1045,19 @@ In cancer samples (compared to normal samples) there would be 930 upregulated ge
 Again, let's save the results.
 
 ```{r, eval = FALSE}
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-
-top <- as.data.frame(top)
-ens.str <- substr(rownames(top), 1, 15)
-top$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-top$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.edger <- as.data.frame(activated.genes.edger)
-ens.str <- substr(activated.genes.edger$activated.genes.edger, 1, 15)
-activated.genes.edger$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.edger <- na.omit(activated.genes.edger)
-
-repressed.genes.edger <- as.data.frame(repressed.genes.edger)
-ens.str <- substr(repressed.genes.edger$repressed.genes.edger, 1, 15)
-repressed.genes.edger$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.edger <- na.omit(repressed.genes.edger)
+top.edger <- as.data.frame(top.edger)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
 
 write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(repressed.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-topOrdered <- top[order(top$FDR),]
+topOrdered <- top.edger[order(top.edger$FDR),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/edgeR.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
-
 
 ## Intersecting DEGs
 
@@ -1044,4 +1097,4 @@ write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common
 | *Repressed* |  600  |  850   |  661   |   473   |
 |   *Total*    | *1588* | *1360* | *1495* | *925*  |
 
-We have 925 DEGs, a 4.8% of the filtered genes (19318) and a 1.5% of the original genes (60660).
+We have 925 DEGs, a 4.8% of the filtered genes (19,318) and a 1.5% of the original genes (60,660).

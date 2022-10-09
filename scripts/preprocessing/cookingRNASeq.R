@@ -129,10 +129,10 @@ load("data/cooked/RNA-Seq/RNA.normFactors.rda")
 normFactors <- normFactors / exp(rowMeans(log(normFactors)))
 normalizationFactors(dds) <- normFactors
 dds <- DESeq(dds)
-res <- results(dds, alpha = 0.05)
+res.deseq2 <- results(dds, alpha = 0.05)
 
-log.fold.change <- res$log2FoldChange
-q.value <- res$padj
+log.fold.change <- res.deseq2$log2FoldChange
+q.value <- res.deseq2$padj
 genes.ids <- rownames(rna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
@@ -152,41 +152,14 @@ points(x = log.fold.change[activated.genes.deseq2],
 points(x = log.fold.change[repressed.genes.deseq2],
        y = log.q.val[repressed.genes.deseq2],col="blue",cex=0.8,pch=19)
 
-ens.str <- substr(rownames(res), 1, 15)
-res$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-res$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.deseq2 <- as.data.frame(activated.genes.deseq2)
-ens.str <- substr(activated.genes.deseq2$activated.genes.deseq2, 1, 15)
-activated.genes.deseq2$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-activated.genes.deseq2 <- na.omit(activated.genes.deseq2)
-
-repressed.genes.deseq2 <- as.data.frame(repressed.genes.deseq2)
-ens.str <- substr(repressed.genes.deseq2$repressed.genes.deseq2, 1, 15)
-repressed.genes.deseq2$entrez <- mapIds(org.Hs.eg.db,
-                                        keys=ens.str,
-                                        column="ENTREZID",
-                                        keytype="ENSEMBL",
-                                        multiVals="first")
-repressed.genes.deseq2 <- na.omit(repressed.genes.deseq2)
+source(file = "scripts/preprocessing/DEGstoEntrez.R")
+DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
 
 # write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 # write.table(repressed.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-resOrdered <- res[order(res$padj),]
+resOrdered <- res.deseq2[order(res.deseq2$padj),]
 head(resOrdered)
 resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
@@ -202,11 +175,11 @@ fit1 <- lmFit(rna.norm.expression, design)
 
 fit2 <- eBayes(fit1)
 
-top <- topTable(fit2, coef = 2, number = Inf)
+top.limma <- topTable(fit2, coef = 2, number = Inf)
 
-log.fold.change <- top$logFC
-q.value <- top$adj.P.Val
-genes.ids <- rownames(top)
+log.fold.change <- top.limma$logFC
+q.value <- top.limma$adj.P.Val
+genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
@@ -225,41 +198,13 @@ points(x = log.fold.change[activated.genes.limma],
 points(x = log.fold.change[repressed.genes.limma],
        y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
-ens.str <- substr(rownames(top), 1, 15)
-top$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-top$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.limma <- as.data.frame(activated.genes.limma)
-ens.str <- substr(activated.genes.limma$activated.genes.limma, 1, 15)
-activated.genes.limma$entrez <- mapIds(org.Hs.eg.db,
-                                       keys=ens.str,
-                                       column="ENTREZID",
-                                       keytype="ENSEMBL",
-                                       multiVals="first")
-activated.genes.limma <- na.omit(activated.genes.limma)
-
-repressed.genes.limma <- as.data.frame(repressed.genes.limma)
-ens.str <- substr(repressed.genes.limma$repressed.genes.limma, 1, 15)
-repressed.genes.limma$entrez <- mapIds(org.Hs.eg.db,
-                                       keys=ens.str,
-                                       column="ENTREZID",
-                                       keytype="ENSEMBL",
-                                       multiVals="first")
-repressed.genes.limma <- na.omit(repressed.genes.limma)
+DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
 
 # write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 # write.table(repressed.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-topOrdered <- top[order(top$adj.P.Val),]
+topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 # write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
@@ -276,11 +221,11 @@ y <- estimateTagwiseDisp(y, design = design)
 plotBCV(y)
 
 et <- exactTest(y) # performs pair-wise tests for differential expression between two groups
-top <- topTags(et, n = Inf) # takes the output from exactTest(), adjusts the raw p-values using the False Discovery Rate (FDR) correction, and returns the top differentially expressed genes
+top.edger <- topTags(et, n = Inf) # takes the output from exactTest(), adjusts the raw p-values using the False Discovery Rate (FDR) correction, and returns the top differentially expressed genes
 
-topSig <- top[top$table$FDR < 0.05, ] # we select DEGs with alpha=0.05
+topSig <- top.edger[top.edger$table$FDR < 0.05, ] # we select DEGs with alpha=0.05
 dim(topSig)
-topSig <- topSig[abs(top$table$logFC) >= 2, ] # we filter the output of dataDEGs by abs(LogFC) >=2
+topSig <- topSig[abs(top.edger$table$logFC) >= 2, ] # we filter the output of dataDEGs by abs(LogFC) >=2
 dim(topSig)
 
 # this is equivalent to doing
@@ -295,9 +240,9 @@ length(activated.genes.edger) # 930
 repressed.genes.edger <- topSig$table$genes[topSig$table$logFC < 0]
 length(repressed.genes.edger) # 661
 
-top <- top$table
-log.fold.change <- top$logFC
-q.value <- top$FDR
+top.edger <- top.edger$table
+log.fold.change <- top.edger$logFC
+q.value <- top.edger$FDR
 genes.ids <- rownames(rna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
@@ -315,42 +260,14 @@ points(x = log.fold.change[activated.genes.edger],
 points(x = log.fold.change[repressed.genes.edger],
        y = log.q.val[repressed.genes.edger],col="blue",cex=0.8,pch=19)
 
-top <- as.data.frame(top)
-ens.str <- substr(rownames(top), 1, 15)
-top$symbol <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="SYMBOL",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-top$entrez <- mapIds(org.Hs.eg.db,
-                     keys=ens.str,
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-
-activated.genes.edger <- as.data.frame(activated.genes.edger)
-ens.str <- substr(activated.genes.edger$activated.genes.edger, 1, 15)
-activated.genes.edger$entrez <- mapIds(org.Hs.eg.db,
-                                       keys=ens.str,
-                                       column="ENTREZID",
-                                       keytype="ENSEMBL",
-                                       multiVals="first")
-activated.genes.edger <- na.omit(activated.genes.edger)
-
-repressed.genes.edger <- as.data.frame(repressed.genes.edger)
-ens.str <- substr(repressed.genes.edger$repressed.genes.edger, 1, 15)
-repressed.genes.edger$entrez <- mapIds(org.Hs.eg.db,
-                                       keys=ens.str,
-                                       column="ENTREZID",
-                                       keytype="ENSEMBL",
-                                       multiVals="first")
-repressed.genes.edger <- na.omit(repressed.genes.edger)
+top.edger <- as.data.frame(top.edger)
+DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
 
 # write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 # write.table(repressed.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-topOrdered <- top[order(top$FDR),]
+topOrdered <- top.edger[order(top.edger$FDR),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 # write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/edgeR.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
