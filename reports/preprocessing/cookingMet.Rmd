@@ -49,7 +49,7 @@ We should also remove probes with all 0 values, although in this case there are 
 probe.0 <- rowSums(met.beta.values)
 table(probe.0 == 0)
 #   FALSE 
-#  354858 
+#  364019 
 ```
 
 # Converting

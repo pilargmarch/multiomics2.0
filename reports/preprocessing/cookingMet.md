@@ -84,7 +84,7 @@ there are none.
 probe.0 <- rowSums(met.beta.values)
 table(probe.0 == 0)
 #   FALSE 
-#  354858 
+#  364019 
 ```
 
 # Converting

@@ -1,4 +1,4 @@
-# multiomics2.0 #
+# multiomics2.0
 ![Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](reports/cover.jpg)
 <sup>[Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](https://www.embl.org/news/science/charting-a-multi-omic-universe/)</sup>
 
@@ -15,7 +15,8 @@ Final `.R` scripts used to generate the obtained results.
 ### 🍳 [Preprocessing](scripts/preprocessing/)
 - [downloadingTCGA.R](scripts/preprocessing/downloadingTCGA.R)
 - [cookingRNASeq.R](scripts/preprocessing/cookingRNASeq.R)
-- 
+- [cookingmiRNASeq.R](scripts/preprocessing/cookingmiRNASeq.R)
+- [cookingMet.R](scripts/preprocessing/cookingMet.R)
 
 ### 👫 [Associations](scripts/associations/)
 

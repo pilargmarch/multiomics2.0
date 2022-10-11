@@ -132,7 +132,7 @@ resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
 # write.table(resOrderedDF, file = "results/preprocessing/cookingmiRNASeq/DESeq2.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 
-#------------------------------- DEA with limma-voom -------------------------------#
+#----------------------------- DEA with limma-voom ----------------------------#
 mirna.norm.expression <- mirna.norm@assayData$normalizedCounts
 v <- voom(mirna.norm.expression, design, plot=TRUE)
 fit <- lmFit(v, design)
