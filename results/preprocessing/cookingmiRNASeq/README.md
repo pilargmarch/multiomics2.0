@@ -18,7 +18,7 @@ GC bias was checked for again with `NOISeq`, where it seem to have been reduced.
 
 ## Analyzing differential expression
 
-Differential expression analysis was performed using `DESeq2`, `limma-voom` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 1 or < -1. Intersecting DEGs among the three methods were selected, giving a total of [119 miRNAs](results/preprocessing/cookingmiRNASeq/common.miRNA.DEGs.txt) (a 24% of the filtered miRNAs and a 6% of the raw miRNAs), 66 being upregulated in cancer samples when compared to normal samples and 53 being downregulated.
+Differential expression analysis was performed using `DESeq2`, `limma-voom` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 1 or < -1. Intersecting DEGs among the three methods were selected, giving a total of [119 miRNAs](/common.miRNA.DEGs.txt) (a 24% of the filtered miRNAs and a 6% of the raw miRNAs), 66 being upregulated in cancer samples when compared to normal samples and 53 being downregulated.
 
 |    DEGs     | DESeq2 | limma-voom | edgeR | Common |
 |:-----------:|:------:|:----------:|:-----:|:------:|

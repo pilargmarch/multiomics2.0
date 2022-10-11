@@ -44,9 +44,9 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 ## 📓 [Results](results/)
 
 ### 🍳 [Preprocessing](results/preprocessing/)
-- [Cooking RNA-Seq](results/preprocessing/cookingRNASeq)
-- [Cooking miRNA-Seq](results/preprocessing/cookingmiRNASeq)
-- [Cooking methylation](results/preprocessing/cookingMet)
+- [Cooking RNA-Seq data](results/preprocessing/cookingRNASeq)
+- [Cooking miRNA-Seq data](results/preprocessing/cookingmiRNASeq)
+- [Cooking methylation data](results/preprocessing/cookingMet)
 
 
 ### 👫 [Associations](results/associations/)
