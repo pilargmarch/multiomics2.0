@@ -10,7 +10,7 @@ Sample-specific GC-content and length biases were observed using `NOIseq`, so we
 
 ## Analyzing differential expression
 
-Differential expression analysis was performed using `DESeq2`, `limma` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 2 or < -2. Intersecting DEGs among the three methods were selected, giving a total of [925 genes](/common.RNA.DEGs.txt) (a 4.8% of the filtered genes and a 1.5% of the raw genes), 452 being upregulated in cancer samples when compared to normal samples and 473 being downregulated. Only genes with available Entrez IDs were selected.
+Differential expression analysis was performed using `DESeq2`, `limma` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 2 or < -2. Intersecting DEGs among the three methods were selected, giving a total of [925 genes](/results/preprocessing/cookingRNASeq/common.RNA.DEGs.txt) (a 4.8% of the filtered genes and a 1.5% of the raw genes), 452 being upregulated in cancer samples when compared to normal samples and 473 being downregulated. Only genes with available Entrez IDs were selected.
 
 |    DEGs     | DESeq2 | limma  | edgeR  | Common |
 |:-----------:|:------:|:------:|:------:|:------:|
