@@ -25,5 +25,3 @@ Differential expression analysis was performed using `DESeq2`, `limma-voom` and 
 | *Activated* |  133   |     77     |  132  |   66   |
 | *Repressed* |   81   |     93     |  69   |   53   |
 |   *Total*   | *214*  |   *170*    | *201* | *119*  |
-
-## 

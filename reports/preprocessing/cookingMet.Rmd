@@ -173,3 +173,97 @@ write.table(topOrderedDF, file = "results/preprocessing/cookingMet/limma.ordered
 ```
 
 ![](images/cookingMet/volcano.plot.limma.png)
+
+It is always useful to plot sample-wise methylation levels for the top differentially methylated CpG sites to quickly ensure the results make sense. If the plots do not look as expected, it is usually an indication of an error in the code, or in setting up the design matrix. It is easier to interpret methylation levels on the beta value scale, so although the analysis is performed on the M-value scale, we visualise data on the beta value scale. The `plotCpg` function in `minfi` is a convenient way to plot the sample-wise beta values stratified by the grouping variable.
+
+```{r, eval = FALSE}
+topOrderedDF <- read.csv(file = "results/preprocessing/cookingMet/limma.ordered.csv", sep = "\t")
+
+library(minfi)
+
+# plot the top 4 most significantly differentially methylated CpGs
+par(mfrow=c(2,2))
+sapply(rownames(topOrderedDF)[1:4], function(cpg){
+  plotCpg(bval, cpg=cpg, pheno=met.sample.info$sample_type)
+})
+```
+
+![](images/cookingMet/top.DM.png)
+
+# Gene ontology testing
+
+Once you have performed a differential methylation analysis, there may be a very long list of significant CpG sites to interpret. One question a researcher may have is, “which gene pathways are over-represented for differentially methylated CpGs?” In some cases it is relatively straightforward to link the top differentially methylated CpGs to genes that make biological sense in terms of the cell types or samples being studied, but there may be many thousands of CpGs significantly differentially methylated. In order to gain an understanding of the biological processes that the differentially methylated CpGs may be involved in, we can perform gene ontology or KEGG pathway analysis using the `gometh` function in the `missMethyl` package.
+
+The `gometh` function takes as input a character vector of the names (e.g. cg20832020) of the significant CpG sites, and optionally, a character vector of all CpGs tested. This is recommended particularly if extensive filtering of the CpGs has been performed prior to analysis. For gene ontology testing (default), the user can specify collection="GO" for KEGG testing collection="KEGG". In the DMPs table, the Name column corresponds to the CpG name. We will select all CpG sites that have adjusted p-value of less than 0.05.
+
+```{r, eval = FALSE}
+DMPs <- read.table(file = "results/preprocessing/cookingMet/met.DEGs.txt")
+DMPs <- as.vector(DMPs$V1)
+
+# Get all the CpG sites used in the analysis to form the background
+all.CpG.sites <- rownames(topOrderedDF)
+```
+
+The `gometh` function takes into account the varying numbers of CpGs associated with each gene on the Illumina methylation arrays. For the 450k array, the numbers of CpGs mapping to genes can vary from as few as 1 to as many as 1200. The genes that have more CpGs associated with them will have a higher probability of being identified as differentially methylated compared to genes with fewer CpGs. We can look at this bias in the data by specifying plot=TRUE in the call to `gometh`.
+
+The `gst` object is a data.frame with each row corresponding to the GO category being tested. The top 20 gene ontology categories can be displayed using the `topGO` function.
+
+This function takes a character vector of significant CpG sites, maps the CpG sites to Entrez Gene IDs, and tests for GO term or KEGG pathway enrichment using a Wallenius' non central hypergeometric test, taking into account the number of CpG sites per gene on the 450K/EPIC array and multi-gene annotated CpGs. Geeleher et al. (2013) showed that a severe bias exists when performing gene set analysis for genome-wide methylation data that occurs due to the differing numbers of CpG sites profiled for each gene. gometh is based on the goseq method (Young et al., 2010), and is a modification of the goana function in the limma package.
+
+The testing now also takes into account that some CpGs are annotated to multiple genes. For a small number of gene families, this previously caused their associated GO categories/gene sets to be erroneously overrepresented and thus highly significant. If fract.counts=FALSE then CpGs are allowed to map to multiple genes (this is NOT recommended).
+
+A new feature of gometh and gsameth is the ability to restrict the input CpGs by genomic feature with the argument genomic.features. The possible options include "ALL", "TSS200", "TSS1500", "Body", "1stExon", "3'UTR", "5'UTR" and "ExonBnd", and the user may specify any combination. Please not that "ExonBnd" is not an annotated feature on 450K arrays. For example if you are interested in the promoter region only, you could specify genomic.features = c("TSS1500","TSS200","1stExon"). The default behaviour is to test all input CpGs sig.cpg even if the user specifies "ALL" and one or more other features.
+
+
+
+```{r, eval = FALSE}
+library(missMethyl)
+library(limma)
+
+par(mfrow=c(1,1))
+gst <- gometh(sig.cpg=DMPs, all.cpg=all.CpG.sites, plot.bias=TRUE)
+
+# Top 10 GO categories
+topGO(gst, number=10)
+```
+
+![](images/cookingMet/bias.DEGs.png)
+
+From the output we can see many of the top GO categories correspond to immune system and T cell processes, which is unsurprising as the cell types being studied form part of the immune system.
+
+# Differential variability
+
+Rather than testing for differences in mean methylation, we may be interested in testing for differences between group variances. For example, it has been hypothesised that highly variable CpGs in cancer are important for tumour progression. Hence we may be interested in CpG sites that are consistently methylated in one group, but variably methylated in another group.
+
+Sample size is an important consideration when testing for differentially variable CpG sites. In order to get an accurate estimate of the group variances, larger sample sizes are required than for estimating group means. A good rule of thumb is to have at least ten samples in each group.
+
+We can test for differentially variable CpGs using the varFit function in the missMethyl package. The syntax for specifying which groups we are interested in testing is slightly different to the standard way a model is specified in limma, particularly for designs where an intercept is fitted (see missMethyl vignette for further details). For the ageing data, the design matrix includes an intercept term, and a term for age. The coef argument in the varFit function indicates which columns of the design matrix correspond to the intercept and grouping factor. Thus, for the ageing dataset we set coef=c(1,2). Note that design matrices without intercept terms are permitted, with specific contrasts tested using the contrasts.varFit function.
+
+```{r}
+# get M-values for analysis
+age.mVals <- getM(age.mSetSqFlt)
+
+design <- model.matrix(~factor(age.targets$Sample_Group))
+# Fit the model for differential variability
+# specifying the intercept and age as the grouping factor
+fitvar <- varFit(age.mVals, design = design, coef = c(1,2))
+
+# Summary of differential variability
+summary(decideTests(fitvar))
+
+topDV <- topVar(fitvar, coef=2)
+# Top 10 differentially variable CpGs between old vs. newborns
+topDV
+```
+
+Similarly to the differential methylation analysis, is it useful to plot sample-wise beta values for the differentially variable CpGs to ensure the significant results are not driven by artifacts or outliers (Figure 14).
+
+```{r}
+  # get beta values for ageing data
+age.bVals <- getBeta(age.mSetSqFlt)
+par(mfrow=c(2,2))
+sapply(rownames(topDV)[1:4], function(cpg){
+  plotCpg(age.bVals, cpg=cpg, pheno=age.targets$Sample_Group)
+})
+```
+
