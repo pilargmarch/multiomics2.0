@@ -22,7 +22,7 @@ As investigating the human DNA methylome has gained interest, several methods ha
 
 ![](images/cookingMet/methylation.island.diagram.jpg)
 
-The processed DNA methylation data measure the level of methylation at known CpG sites as beta-values, calculated from array intensities as Beta = M/(M+U) which ranges from 0 being unmethylated and 1 fully methylated. We have information for 485,577 CpG sites and 857 samples. The overwhelming majority of the arrays are Illumina human methylation 450, while a few are 27.
+The processed DNA methylation data measure the level of methylation at known CpG sites as beta-values, calculated from array intensities as Beta = M/(M+U) which ranges from 0 being unmethylated and 1 fully methylated. We have information for 485,577 CpG sites and 857 samples. All the used methylation arrays are Illumina Human Methylation 450.
 
 Methylation annotation was retrieved from Methylation Array Gene Annotation File (v36) (https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files).
 
