@@ -2,7 +2,7 @@
 
 Since the data files are too large to store on GitHub, here is the structure of the data folder with direct links to said files stored in [this MEGA folder](https://mega.nz/folder/Kl8h1LJJ#oactgNw1q3Wwu5qZaLdnkA). All data was downloaded with R/Bioconductor package `TCGAbiolinks` using Harmonized mode, which prepares data in a different way to Legacy (e.g. using `STAR` counts instead of `RSEM` estimated counts in the case of RNA-Seq) and aligns reads against human assembly GRCh38 (hg38). `.rda` files can be directly loaded into R. `.RDS` files need to be read using the `readRDS` R function.
 
-![Intersecting omics types available](/venn.diagram.data.jpg)
+![Intersecting omics types available](venn.diagram.data.jpg)
 
 *Note: some omics appear to have more samples than others, but this is just because some samples (normal tissue; or tumor samples) were analyzed twice, using the same aliquot. In practice we'll merge the data in these cases.
 
