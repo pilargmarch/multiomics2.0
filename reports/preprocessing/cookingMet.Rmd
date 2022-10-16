@@ -12,7 +12,19 @@ output:
 
 # Loading
 
-The processed DNA methylation data measure the level of methylation at known CpG sites as beta-values, calculated from array intensities (Level 2 data) as Beta = M/(M+U) which ranges from 0 being unmethylated and 1 fully methylated. We have information for 485,577 CpG sites and 857 samples.
+DNA methylation is an epigenetic mechanism that in vertebrates occurs most frequently at cytosines followed by guanines (CpG). This modification regulates gene expression and can be inherited through cell division, thus being essential for preserving tissue identities and guiding normal cellular development [1]. Hypermethylation of CpG islands located in the promoter regions of tumor suppressor genes has been firmly established as one of the most common mechanisms for gene regulation in cancer [2,3]. 
+
+![](images/cookingMet/methylation.regulation.diagram.png)
+
+As investigating the human DNA methylome has gained interest, several methods have been developed to detect cytosine methylation on a genomic scale. Among these, Illumina’s Infinium Methylation Assay is a hybridization-based technique that offers quantitative methylation measurements at the single-CpG-site level providing as accurate results as sequencing-based methylation assays (e.g. MethylCap-seq, MeDIP-seq, RRBS) [4]. Microarray-based Illumina Infinium methylation assay has been recently used in epigenomic studies [5-7] due to its high throughput, good accuracy, small sample requirement and relatively low cost. To date, available Infinium Illumina platforms for methylation analysis are: the HumanMethylation27 BeadChip with 27,578 CpG sites, covering >14,000 genes; and, the new HumanMethylation450 BeadChip comprising >450,000 methylation sites. To estimate the methylation status, the Illumina Infinium assay utilizes a pair of probes (a methylated probe and an unmethylated probe) to measure the intensities of the methylated and unmethylated alleles at the interrogated CpG site [8]. The methylation level is then estimated based on the measured intensities of this pair of probes.
+
+![](images/cookingMet/CpG.island.diagram.png)
+
+![](images/cookingMet/methylation.island.diagram.jpg)
+
+The processed DNA methylation data measure the level of methylation at known CpG sites as beta-values, calculated from array intensities as Beta = M/(M+U) which ranges from 0 being unmethylated and 1 fully methylated. We have information for 485,577 CpG sites and 857 samples. The overwhelming majority of the arrays are Illumina human methylation 450, while a few are 27.
+
+Methylation annotation was retrieved from Methylation Array Gene Annotation File (v36) (https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files).
 
 ```{r, message = FALSE}
 library(TCGAbiolinks)
@@ -230,6 +242,8 @@ topGO(gst, number=10)
 ![](images/cookingMet/bias.DEGs.png)
 
 From the output we can see many of the top GO categories correspond to immune system and T cell processes, which is unsurprising as the cell types being studied form part of the immune system.
+
+![](images/cookingMet/gene.diagram.jpg)
 
 # Differential variability
 
