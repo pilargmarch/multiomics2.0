@@ -21,6 +21,8 @@ met.beta.values <- met.beta.values[row.names(met.beta.values) %in% names(probe),
 probe.0 <- rowSums(met.beta.values)
 table(probe.0 == 0)
 
+met.beta.values[,c("TCGA-A7-A26F-01A-21D-A16A-05", "TCGA-A7-A26J-01A-11D-A16A-05", "TCGA-A7-A26J-01A-11D-A27B-05", "TCGA-A7-A13G-01A-11D-A13K-05", "TCGA-A7-A26E-01B-06D-A27B-05", "TCGA-A7-A26E-01A-11D-A16A-05", "TCGA-B6-A1KC-01A-11D-A13K-05", "TCGA-AC-A2QH-01B-04D-A22R-05", "TCGA-AC-A3OD-01A-11D-A21R-05")] <- NULL
+
 #--------------------- converting beta-values to M-values ---------------------#
 bval <- met.beta.values
 saveRDS(bval, file = "data/cooked/met/bval.RDS", compress = FALSE)
@@ -61,6 +63,9 @@ for (i in 1:length(bcodes)) {
 legend("topright", legend = c("Tumor", "Normal"), col = c("red", "blue"), lty = 1)
 
 #------------------------------- DEA with limma -------------------------------#
+
+met.sample.info <- met.sample.info[-c(30, 188, 189, 192, 198, 199, 309, 314, 794), ]
+
 group <- as.factor(met.sample.info$sample_type)
 
 group <- relevel(group, ref = "Solid Tissue Normal")

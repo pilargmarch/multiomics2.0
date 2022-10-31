@@ -50,6 +50,7 @@ hsa-mir-378d-1
 hsa-mir-378d-2
 hsa-mir-379
 hsa-mir-383
+hsa-mir-433
 hsa-mir-451a
 hsa-mir-452
 hsa-mir-4732
@@ -70,6 +71,7 @@ hsa-mir-6507
 hsa-mir-6510
 hsa-mir-6511b-1
 hsa-mir-6511b-2
+hsa-mir-654
 hsa-mir-655
 hsa-mir-665
 hsa-mir-6715a

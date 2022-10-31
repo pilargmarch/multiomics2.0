@@ -100,7 +100,6 @@ library(NOISeq)
 library(TCGAbiolinks)
 ```
 
-
 ```{r}
 barcodes <- get_IDs(rna)
 myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
@@ -171,6 +170,7 @@ But first, we'll explore the raw counts a bit to later help us choose a filterin
 ```{r, eval = FALSE}
 boxplot(log10(rna.raw.counts[, 1:50])+1, outline = FALSE, las = 2)
 ```
+
 ![](images/cookingRNASeq/boxplot.raw.png)
 
 ```{r, eval = FALSE}
@@ -180,7 +180,6 @@ explo.plot(mybiodetection, samples = c(1, 2), toplot = "protein_coding", plottyp
 ```
 
 ![](images/cookingRNASeq/mybiodetection.png)
-
 
 ```{r, eval = FALSE}
 [1] "Percentage of protein_coding biotype in each sample:"
@@ -222,7 +221,6 @@ ggplot() + aes(x=mean_log_cpm) +
 
 ![](images/cookingRNASeq/histogram.logCPM.png)
 
-
 ```{r, eval = FALSE}
 ggplot() + aes(x=mean_log_cpm) +
     geom_density() +
@@ -246,7 +244,6 @@ myfiltCPM1 <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.conditio
 
 myfiltWilcoxon <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.condition, norm = FALSE, depth = NULL, method = 2, p.adj = "fdr") # 56401 (93%) features are to be kept for differential expression analysis with filtering method 2
 ```
-
 
 ```{r, eval=FALSE}
 boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2)
@@ -283,7 +280,6 @@ myCPMdata1 <- NOISeq::readData(data = myfiltCPM1, factors = myfactors, length = 
 
 myWilcoxondata <- NOISeq::readData(data = myfiltWilcoxon, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 ```
-
 
 ```{r, eval=FALSE}
 mybiodetectionCPM02 <- dat(myCPMdata02, k = 0, type = "biodetection", factor = NULL)
@@ -325,7 +321,6 @@ sum(myCPMdata1@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 14772 p
 sum(myWilcoxondata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19391 protein coding genes
 ```
 
-
 Method 2 (Wilcoxon test) barely does any filtering at all, so we'll stick to method 1 (CPM). Given the amount of protein coding features we are left with with all the different thresholds, we'll choose a CPM threshold of 0.5 and will be left with only 32% of the original features. This makes sense, as the prefiltered raw counts had a large number of long non-coding RNAs and pseudogenes (which tend to have low expression in an organism) that were removed with the CPM filtering, enriching the counts in protein coding genes (going from \~70% to 85% of total biotypes).
 
 Let's prep our data once again, this time with our filtered data!
@@ -340,12 +335,11 @@ rm(myfiltCPM05)
 save(rna.filt.counts, file = "data/cooked/RNA-Seq/RNA.filt.rda")
 ```
 
-```{r}
+```{r, eval = FALSE}
 load("data/cooked/RNA-Seq/RNA.filt.rda")
 
 myexpdata.filt <- NOISeq::readData(data = rna.filt.counts, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 ```
-
 
 # Exploring
 
@@ -359,6 +353,7 @@ This plot describes the relationship between the feature length and the expressi
 myexplengthbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.filt, samples = NULL, toplot = "global")
 ```
+
 ![](images/cookingRNASeq/length.bias.filt.png)
 
 Since the p-values are significant (even though R^2^ coefficients aren't higher than 95%) and we can see in the graph that mean expression varies depending on feature length, we can conclude that the expression depends on the feature length and as such, a length-based normalization is required.
@@ -371,6 +366,7 @@ This plot describes the relationship between the feature GC content and the expr
 myexpGCbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.filt, samples = NULL, toplot = "global")
 ```
+
 ![](images/cookingRNASeq/gc.bias.filt.png)
 
 Although the p-values are significant, R² values are not high enough for us to be able to confidently say there exists a GC content bias. However, we will try a GC-content normalization as well, to try to remove this potential bias.
@@ -408,6 +404,7 @@ explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "loadings")
 ```{r, eval = FALSE}
 explo.plot(myexpPCA, factor = "barcodes.tss")
 ```
+
 ![](images/cookingRNASeq/pca.tss.png)
 
 ```{r, eval = FALSE}
@@ -527,7 +524,6 @@ rownames(rna.cqn.norm.expression) <- sub('\\.[0-9]*$', '', rownames(rna.cqn.norm
 myexpdata.norm <- NOISeq::readData(data = rna.cqn.norm.expression, factors = myfactors, length = mylength.norm, gc = mygc.norm, biotype = mybiotypes.norm, chromosome = mychroms.norm)
 ```
 
-
 ```{r, eval = FALSE}
 myexplengthbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm, samples = NULL, toplot = "global")
@@ -539,6 +535,7 @@ explo.plot(myexplengthbias.norm, samples = NULL, toplot = "global")
 myexpGCbias.norm = dat(myexpdata.norm, factor = "barcodes.condition", type = "GCbias")
 explo.plot(myexpGCbias.norm, samples = NULL, toplot = "global")
 ```
+
 ![](images/cookingRNASeq/gc.bias.cqn.norm.png)
 
 ```{r, eval = FALSE}
@@ -663,7 +660,6 @@ myexpdata.norm.eda.gc.length <- NOISeq::readData(data = rna.eda.counts.gc.length
 myexpdata.norm.eda.length.gc <- NOISeq::readData(data = rna.eda.counts.length.gc, factors = myfactors, length = mylength.norm, gc = mygc.norm)
 ```
 
-
 ```{r, eval = FALSE}
 myexplengthbias.norm.eda.gc = dat(myexpdata.norm.eda.gc, factor = "barcodes.condition", type = "lengthbias")
 explo.plot(myexplengthbias.norm.eda.gc, samples = NULL, toplot = "global")
@@ -706,8 +702,7 @@ explo.plot(myexpGCbias.norm.eda.length.gc, samples = NULL, toplot = "global")
 
 ![](images/cookingRNASeq/gc.bias.eda.length.gc.norm.png)
 
-Length then GC normalization has the same effect as only GC normalization, leading me to think it's not
-applying it properly. The third option (length then GC normalization) is actually increasing length bias, so that one is out of the question. The second option (GC then length normalization) is the most interesting out of the three, but `cqn` does a better job for GC bias (while being pretty comparable on length bias), so we'll normalize our filtered RNA-Seq counts with `cqn` instead of with `EDASeq`.
+Length then GC normalization has the same effect as only GC normalization, leading me to think it's not applying it properly. The third option (length then GC normalization) is actually increasing length bias, so that one is out of the question. The second option (GC then length normalization) is the most interesting out of the three, but `cqn` does a better job for GC bias (while being pretty comparable on length bias), so we'll normalize our filtered RNA-Seq counts with `cqn` instead of with `EDASeq`.
 
 What about PCAs? Is there such good separation between tumor and control samples still?
 
@@ -771,6 +766,318 @@ boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
 
 ![](images/cookingRNASeq/boxplot.eda.length.gc.norm.png)
 
+Some of the samples are duplicated, so we need to either remove one of them or take the average.
+
+```{r, eval = FALSE}
+load("data/cooked/RNA-Seq/RNA.norm.rda")
+rna.norm.expression <- rna.norm$y + rna.norm$offset
+
+rna.patients <- substr(colnames(rna.norm.expression), 1, 15)
+which(duplicated(rna.patients)) 
+# 187 188 196 197 638 639 652 714 715
+```
+
+The duplicated samples are TCGA-A7-A26J-01 (3x), TCGA-A7-A26E-01 (3x), TCGA-A7-A13E-01 (3x), TCGA-A7-A0DC-01 (2x) and TCGA-A7-A13D-01 (3x). To help us decide what to do, we'll first calculate the correlation between these samples. Because they all end in "-01", they all are primary solid tumor samples.
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,186],
+y = rna.norm.expression[,187],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[186],ylab=colnames(rna.norm.expression)[187],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,186],
+rna.norm.expression[,187]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.186.187.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,186],
+y = rna.norm.expression[,188],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[186],ylab=colnames(rna.norm.expression)[188],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,186],
+rna.norm.expression[,188]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.186.188.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,187],
+y = rna.norm.expression[,188],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[187],ylab=colnames(rna.norm.expression)[188],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,187],
+rna.norm.expression[,188]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.187.188.png) [Broad Institute recommends the following:](https://gdac.broadinstitute.org/runs/stddata__2014_01_15/samples_report/READ_Replicate_Samples.html).
+
+"In many instances there is more than one aliquot for a given combination of individual, platform, and data type. However, only one aliquot may be ingested into Firehose. Therefore, a set of precedence rules are applied to select the most scientifically advantageous one among them. Two filters are applied to achieve this aim: an Analyte Replicate Filter and a Sort Replicate Filter.
+
+-   Analyte Replicate Filter: the following precedence rules are applied when the aliquots have differing analytes. For RNA aliquots, T analytes are dropped in preference to H and R analytes, since T is the inferior extraction protocol. If H and R are encountered, H is the chosen analyte. This is somewhat arbitrary and subject to change, since it is not clear at present whether H or R is the better protocol. If there are multiple aliquots associated with the chosen RNA analyte, the aliquot with the later plate number is chosen. For DNA aliquots, D analytes (native DNA) are preferred over G, W, or X (whole-genome amplified) analytes, unless the G, W, or X analyte sample has a higher plate number.
+
+-   Sort Replicate Filter: the following precedence rules are applied when the analyte filter still produces more than one sample. The sort filter chooses the aliquot with the highest lexicographical sort value, to ensure that the barcode with the highest portion and/or plate number is selected when all other barcode fields are identical."
+
+Since in the first case we're dealing with different analytes (TCGA-A7-A26J-01B and TCGA-A7-A26J-01A) and they both have the same plate number (A277), which is the highest, we could discard TCGA-A7-A26J-01A-11R-A169-0 and take the average of TCGA-A7-A26J-01B-02R-A277-07 and TCGA-A7-A26J-01A-11R-A277-07, which have a correlation of 86% between them (correlation between seemingly unrelated samples sits at approximately 80%).
+
+Another valid way to look at it is to discard FFPE samples, that is, formalin-fixed paraffin-embedded samples, which are not suitable for molecular analysis because the RNA and DNA are trapped in the nucleic acid-protein cross linking from the fixation process.
+
+```{r, eval = FALSE}
+rna.sample.info["TCGA-A7-A26J-01B-02R-A277-07", "is_ffpe"] # TRUE
+rna.sample.info["TCGA-A7-A26J-01A-11R-A277-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A26J-01A-11R-A169-07", "is_ffpe"] # FALSE
+```
+
+We will use TCGA-A7-A26J-01A-11R-A277-07 and discard the other two. Let's move on to TCGA-A7-A26E-01.
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,195],
+y = rna.norm.expression[,196],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[195],ylab=colnames(rna.norm.expression)[196],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,195],
+rna.norm.expression[,196]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.195.196.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,196],
+y = rna.norm.expression[,197],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[196],ylab=colnames(rna.norm.expression)[197],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,196],
+rna.norm.expression[,197]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.196.197.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,195],
+y = rna.norm.expression[,197],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[195],ylab=colnames(rna.norm.expression)[197],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,195],
+rna.norm.expression[,197]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.195.197.png)
+
+```{r, eval = FALSE}
+rna.sample.info["TCGA-A7-A26E-01A-11R-A277-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A26E-01A-11R-A169-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A26E-01B-06R-A277-07", "is_ffpe"] # TRUE
+```
+
+We will apply the same criteria and pick TCGA-A7-A26E-01A-11R-A277-07. Now on to TCGA-A7-A13E-01.
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,637],
+y = rna.norm.expression[,638],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[637],ylab=colnames(rna.norm.expression)[638],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,637],
+rna.norm.expression[,638]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.637.638.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,637],
+y = rna.norm.expression[,639],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[637],ylab=colnames(rna.norm.expression)[639],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,637],
+rna.norm.expression[,639]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.637.639.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,638],
+y = rna.norm.expression[,639],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[638],ylab=colnames(rna.norm.expression)[639],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,638],
+rna.norm.expression[,639]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.638.639.png)
+
+```{r, eval = FALSE}
+rna.sample.info["TCGA-A7-A13E-01A-11R-A12P-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A13E-01A-11R-A277-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A13E-01B-06R-A277-07", "is_ffpe"] # TRUE
+```
+
+We will apply the same criteria and pick TCGA-A7-A13E-01A-11R-A277-07. Now on to TCGA-A7-A0DC-01.
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,651],
+y = rna.norm.expression[,652],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[651],ylab=colnames(rna.norm.expression)[652],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,651],
+rna.norm.expression[,652]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.651.652.png)
+
+```{r, eval = FALSE}
+rna.sample.info["TCGA-A7-A0DC-01A-11R-A00Z-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A0DC-01B-04R-A22O-07", "is_ffpe"] # TRUE
+```
+
+Using the same logic we would use TCGA-A7-A0DC-01B-04R-A22O-07, but this is a FFPE sample. On the other hand, the Broad Institute has blacklisted TCGA-A7-A0DC-01A-11R-A00Z-07 as Katherine Hoadley identified it as having a low read count or couldn't confirm SNP comparison. Since there isn't a clear criterion, we'll take the average of the two samples. Now on to TCGA-A7-A13D-01.
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,713],
+y = rna.norm.expression[,714],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[713],ylab=colnames(rna.norm.expression)[714],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,713],
+rna.norm.expression[,714]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.713.714.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,713],
+y = rna.norm.expression[,715],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[713],ylab=colnames(rna.norm.expression)[715],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,713],
+rna.norm.expression[,715]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.713.715.png)
+
+```{r, eval = FALSE}
+plot(x = rna.norm.expression[,714],
+y = rna.norm.expression[,715],
+pch=19,col="grey",xlab=colnames(rna.norm.expression)[714],ylab=colnames(rna.norm.expression)[715],cex=0.5)
+
+text(x=-5,y=10,
+labels = paste(c(
+"cor = ",
+round(100*cor(rna.norm.expression[,714],
+rna.norm.expression[,715]),
+digits = 2),
+"%"), collapse=""))
+```
+
+![](images/cookingRNASeq/correlation.714.715.png)
+
+```{r, eval = FALSE}
+rna.sample.info["TCGA-A7-A13D-01A-13R-A277-07", "is_ffpe"] # FALSE
+rna.sample.info["TCGA-A7-A13D-01B-04R-A277-07", "is_ffpe"] # TRUE
+rna.sample.info["TCGA-A7-A13D-01A-13R-A12P-07", "is_ffpe"] # FALSE
+```
+
+Following the same criteria as before, we'll go with TCGA-A7-A13D-01A-13R-A277-07. All of these choices (except the second to last, which doesn't appear) can be confirmed to be recommended by the Broad Institute [here](https://gdac.broadinstitute.org/runs/tmp/sample_report__2018_01_17/Replicate_Samples.html).
+
+Let's make all these changes.
+
+```{r, eval = FALSE}
+load("data/cooked/RNA-Seq/RNA.filt.rda")
+
+rna.filt.counts$`TCGA-A7-A26J-01B-02R-A277-07` <- NULL
+rna.filt.counts$`TCGA-A7-A26J-01A-11R-A169-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A26E-01A-11R-A169-07` <- NULL
+rna.filt.counts$`TCGA-A7-A26E-01B-06R-A277-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A13E-01A-11R-A12P-07` <- NULL
+rna.filt.counts$`TCGA-A7-A13E-01B-06R-A277-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A0DC-01A-11R-A00Z-07` <- sum(rna.filt.counts$`TCGA-A7-A0DC-01A-11R-A00Z-07`, rna.filt.counts$`TCGA-A7-A0DC-01B-04R-A22O-07`)/2
+rna.filt.counts$`TCGA-A7-A0DC-01B-04R-A22O-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A13D-01A-13R-A12P-07` <- NULL
+rna.filt.counts$`TCGA-A7-A13D-01B-04R-A277-07` <- NULL
+
+save(rna.filt.counts, file = "data/cooked/RNA-Seq/RNA.filt.rda")
+```
+
+We will perform normalization again, just to be sure.
+
+```{r, eval = FALSE}
+library(cqn)
+load("results/preprocessing/cookingRNASeq/GC.length.RNA.rda")
+gc.length.rna <- as.data.frame(gc.length.rna)
+sizeFactors.rna <- colSums(rna.filt.counts)
+
+rna.norm <- cqn(rna.filt.counts, lengths = gc.length.rna$length, x = gc.length.rna$gc, sizeFactors = sizeFactors.rna, verbose = TRUE)
+# save(rna.norm, file = "data/cooked/RNA-Seq/RNA.norm.rda")
+
+cqnOffset <- rna.norm$glm.offset
+cqnNormFactors <- exp(cqnOffset)
+# save(cqnNormFactors, file = "data/cooked/RNA-Seq/RNA.normFactors.rda")
+
+rna.norm.expression <- rna.norm$y + rna.norm$offset
+rna.norm.expression <- as.data.frame(rna.norm.expression)
+```
+
 # Analyzing differential expression
 
 For all, I'll select DEGs as those genes with a q.value/p.adj/FDR less than 0.05; and with a logFoldChange bigger than 2. Standard is logFC of 1, but we are being more restrictive because of the large amount of data we'll be working with.
@@ -785,12 +1092,11 @@ library(TCGAbiolinks)
 
 load("data/cooked/RNA-Seq/RNA.filt.rda")
 
-barcodes <- get_IDs(rna)
+barcodes <- get_IDs(rna.filt.counts)
 myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
-rna.sample.info <- cbind(rna.sample.info, myfactors)
 
 dds <- DESeqDataSetFromMatrix(countData = rna.filt.counts,
-                              colData = rna.sample.info,
+                              colData = myfactors,
                               design = ~ barcodes.condition)
 
 dds$barcodes.condition <- relevel(dds$barcodes.condition, ref = "normal")
@@ -820,14 +1126,14 @@ summary(res.deseq2)
 ```{r, eval = FALSE}
 out of 19318 with nonzero total read count
 adjusted p-value < 0.05
-LFC > 0 (up)       : 10159, 53%
-LFC < 0 (down)     : 5353, 28%
+LFC > 0 (up)       : 10328, 53%
+LFC < 0 (down)     : 5224, 27%
 outliers [1]       : 0, 0%
 low counts [2]     : 0, 0%
-(mean count < 3)
+(mean count < 4)
 ```
 
-We'll select as significant those genes with a p.adj < 0.05 and a lFC > 2 or lFC < -2. We get a total of 1148 upregulated DEGs (a 6% of the filtered genes) in cancer samples, compared to normal ones; and 670 downregulated DEGs (a 3.5% of the filtered genes), from a total of 19,318 filtered genes (originally 60,660 genes in our raw data).
+We'll select as significant those genes with a p.adj \< 0.05 and a lFC \> 2 or lFC \< -2. We get a total of 1203 upregulated DEGs (a 6% of the filtered genes) in cancer samples, compared to normal ones; and 635 downregulated DEGs (a 3.3% of the filtered genes), from a total of 19,318 filtered genes (originally 60,660 genes in our raw data).
 
 ```{r, eval = FALSE}
 log.fold.change <- res.deseq2$log2FoldChange
@@ -839,8 +1145,8 @@ activated.genes.deseq2 <- genes.ids[log.fold.change > 2 & q.value < 0.05]
 activated.genes.deseq2 <- activated.genes.deseq2[!is.na(activated.genes.deseq2)]
 repressed.genes.deseq2 <- genes.ids[log.fold.change < - 2 & q.value < 0.05]
 repressed.genes.deseq2 <- repressed.genes.deseq2[!is.na(repressed.genes.deseq2)]
-length(activated.genes.deseq2) # 1148
-length(repressed.genes.deseq2) # 670
+length(activated.genes.deseq2) # 1203
+length(repressed.genes.deseq2) # 635
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -858,10 +1164,13 @@ Our results table so far only contains the Ensembl gene IDs, but alternative gen
 
 ```{r, eval = FALSE}
 source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
+DEGstoEntrez.result <- DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
+res.deseq2 <- DEGstoEntrez.result[[1]]
+activated.genes.deseq2 <- DEGstoEntrez.result[[2]]
+repressed.genes.deseq2 <- DEGstoEntrez.result[[3]]
 ```
 
-Some of the tested genes don't have an Entrez ID associated with them (whether because they've just been discovered or are hypothetical), so we'll omit those to make our life easier, leaving us with 17191 genes. Out of the 1148 activated genes we ended up with 988; and from the 670 supressed genes, we only have names for 600 of them.
+Some of the tested genes don't have an Entrez ID associated with them (whether because they've just been discovered or are hypothetical), so we'll omit those to make our life easier, leaving us with 17191 genes. Out of the 1203 activated genes we ended up with 1047; and from the 635 suppressed genes, we only have names for 567 of them.
 
 We'll save both lists of DEGs (upregulated and downregulated) as well as the DEA results for all of the tested genes, ordered by adjusted p-value. All gene IDs will be Entrez to save us time in later analysis (e.g. GSEA).
 
@@ -890,7 +1199,7 @@ load("data/cooked/RNA-Seq/RNA.norm.rda")
 rna.norm.expression <- rna.norm$y + rna.norm$offset
 
 library(TCGAbiolinks)
-barcodes <- get_IDs(rna)
+barcodes <- get_IDs(rna.norm.expression)
 
 barcodes$condition <- as.factor(barcodes$condition)
 barcodes$condition <- relevel(barcodes$condition, ref = "normal")
@@ -912,8 +1221,8 @@ names(q.value) <- genes.ids
 activated.genes.limma <- genes.ids[log.fold.change > 2 & q.value < 0.05]
 repressed.genes.limma <- genes.ids[log.fold.change < -2 & q.value < 0.05]
 
-length(activated.genes.limma) # 571
-length(repressed.genes.limma) # 933
+length(activated.genes.limma) # 612
+length(repressed.genes.limma) # 913
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -927,11 +1236,14 @@ y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
 ![](images/cookingRNASeq/volcano.plot.limma.png)
 
-`limma` gives us 571 upregulated genes and 933 downregulated genes. We save the results.
+`limma` gives us 612 upregulated genes and 913 downregulated genes. We save the results.
 
 ```{r, eval = FALSE}
 source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
+DEGstoEntrez.result <- DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
+top.limma <- DEGstoEntrez.result[[1]]
+activated.genes.limma <- DEGstoEntrez.result[[2]]
+repressed.genes.limma <- DEGstoEntrez.result[[3]]
 
 write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
@@ -943,7 +1255,7 @@ topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
 
-Again, we lost some genes that could not be mapped to Entrez IDs; we now have 510 activated DEGs and 850 repressed DEGs.
+Again, we lost some genes that could not be mapped to Entrez IDs; we now have 551 activated DEGs and 833 repressed DEGs.
 
 ## edgeR
 
@@ -951,8 +1263,14 @@ First we construct a `DGEList`.
 
 ```{r, eval = FALSE}
 library(edgeR)
+library(TCGAbiolinks)
 
 load("data/cooked/RNA-Seq/RNA.normFactors.rda")
+load("data/cooked/RNA-Seq/RNA.filt.rda")
+
+barcodes <- get_IDs(rna.filt.counts)
+barcodes$condition <- as.factor(barcodes$condition)
+barcodes$condition <- relevel(barcodes$condition, ref = "normal")
 
 y <- DGEList(counts = rna.filt.counts, lib.size = colSums(rna.filt.counts), group = barcodes$condition, genes = rownames(rna.filt.counts))
 
@@ -977,8 +1295,7 @@ y <- estimateTagwiseDisp(y, design = design)
 plotBCV(y)
 ```
 
-![](images/cookingRNASeq/plotBCV.edger.png)
-In this case it is not correct to set the common dispersion for all genes as there is a lot of difference between the two dispersions and therefore this cannot be treated as a good representation of the dispersion of each gene, so gene by gene dispersion was necessary.
+![](images/cookingRNASeq/plotBCV.edger.png) In this case it is not correct to set the common dispersion for all genes as there is a lot of difference between the two dispersions and therefore this cannot be treated as a good representation of the dispersion of each gene, so gene by gene dispersion was necessary.
 
 After adjusting the dispersion parameters, we have to adjust the model and perform a significance test. exactTest does the two-by-two comparisons for the differential expression between the two groups and topTags takes the output and adjusts the p-values using FDR correction, and returns all the DEGs (because I have set n=Inf).
 
@@ -998,9 +1315,9 @@ summary(de)
 
 ```{r, eval = FALSE}
        cancer-normal
-Down             661
-NotSig         17727
-Up               930
+Down             586
+NotSig         17760
+Up               972
 ```
 
 ```{r, eval = FALSE}
@@ -1009,15 +1326,16 @@ plotSmear(et, de.tags=detags, main="plotSmear")
 abline(h=c(-2,2), col="blue")
 
 activated.genes.edger <- topSig$table$genes[topSig$table$logFC > 0]
-length(activated.genes.edger) # 930
+length(activated.genes.edger) # 972
 repressed.genes.edger <- topSig$table$genes[topSig$table$logFC < 0]
-length(repressed.genes.edger) # 661
+length(repressed.genes.edger) # 586
 ```
 
 ![](images/cookingRNASeq/plotsmear.edger.png)
 
 ```{r, eval = FALSE}
 top.edger <- top.edger$table
+top.edger <- top.edger[order(top.edger$genes), ]
 log.fold.change <- top.edger$logFC
 q.value <- top.edger$FDR
 genes.ids <- rownames(rna.filt.counts)
@@ -1040,14 +1358,18 @@ y = log.q.val[repressed.genes.edger],col="blue",cex=0.8,pch=19)
 
 ![](images/cookingRNASeq/volcano.plot.edger.png)
 
-In cancer samples (compared to normal samples) there would be 930 upregulated genes and 661 downregulated genes.
+In cancer samples (compared to normal samples) there would be 972 upregulated genes and 586 downregulated genes.
 
 Again, let's save the results.
 
 ```{r, eval = FALSE}
 top.edger <- as.data.frame(top.edger)
 source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
+
+DEGstoEntrez.result <- DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
+top.edger <- DEGstoEntrez.result[[1]]
+activated.genes.edger <- DEGstoEntrez.result[[2]]
+repressed.genes.edger <- DEGstoEntrez.result[[3]]
 
 write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
@@ -1081,20 +1403,20 @@ repressed.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/
 repressed.genes.edger <- as.vector(repressed.genes.edger$V1)
 
 common.activated <- intersect(intersect(activated.genes.deseq2, activated.genes.edger), activated.genes.limma) 
-length(common.activated) # 452
+length(common.activated) # 484
 
 common.repressed <- intersect(intersect(repressed.genes.deseq2, repressed.genes.edger), repressed.genes.limma) 
-length(common.repressed) # 473
+length(common.repressed) # 437
 
 write.table(common.activated, file = "results/preprocessing/cookingRNASeq/common.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
-|     DEGs     | DESeq2 | limma  | edgeR  | Common |
-|:------------:|:------:|:------:|:------:|:-------:|
-| *Activated*  |  988   |  510   |  834   |   452   |
-| *Repressed* |  600  |  850   |  661   |   473   |
-|   *Total*    | *1588* | *1360* | *1495* | *925*  |
+|    DEGs     | DESeq2 | limma  | edgeR  | Common |
+|:-----------:|:------:|:------:|:------:|:------:|
+| *Activated* |  1047  |  551   |  871   |  484   |
+| *Repressed* |  567   |  833   |  531   |  437   |
+|   *Total*   | *1614* | *1384* | *1402* | *921*  |
 
-We have 925 DEGs, a 4.8% of the filtered genes (19,318) and a 1.5% of the original genes (60,660).
+We have 921 DEGs, a 4.8% of the filtered genes (19,318) and a 1.5% of the original genes (60,660).

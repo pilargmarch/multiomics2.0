@@ -31,4 +31,6 @@ DEGstoEntrez <- function(res, activated.genes, repressed.genes){
                                           keytype="ENSEMBL",
                                           multiVals="first")
   repressed.genes <- na.omit(repressed.genes)
+  
+  return(list(res, activated.genes, repressed.genes))
 }

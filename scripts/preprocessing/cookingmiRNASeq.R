@@ -54,6 +54,8 @@ explo.plot(mymirnaPCA, factor = "barcodes.portion")
 explo.plot(mymirnaPCA, factor = "barcodes.plate")
 
 #--------------- normalizing for GC content with EDASeq ---------------#
+mirna.filt.counts[,c("TCGA-A7-A26F-01B-04R-A22P-13", "TCGA-A7-A26J-01A-11R-A168-13", "TCGA-A7-A26J-01B-02R-A27D-13", "TCGA-A7-A13G-01B-04R-A22P-13", "TCGA-A7-A26E-01B-06R-A27D-13", "TCGA-A7-A26E-01A-11R-A168-13", "TCGA-B6-A1KC-01A-11R-A13P-13", "TCGA-AC-A2QH-01B-04R-A22P-13", "TCGA-AC-A3QQ-01A-11R-A22I-13", "TCGA-A7-A13E-01A-11R-A12O-13", "TCGA-A7-A13E-01B-06R-A27D-13", "TCGA-A7-A0DC-01A-11R-A010-13", "TCGA-A7-A13D-01A-13R-A12O-13", "TCGA-A7-A13D-01B-04R-A27D-13", "TCGA-AC-A3OD-01A-11R-A21U-13", "TCGA-A7-A26I-01B-06R-A22P-13")] <- NULL
+
 load("results/preprocessing/cookingmiRNASeq/GC.miRNA.rda")
 feature <- data.frame(gc=mygc)
 
@@ -188,12 +190,24 @@ dim(topSig)
 topSig <- topSig[abs(top.edger$table$logFC) >= 1, ] # we filter the output of dataDEGs by abs(LogFC) >=1
 dim(topSig)
 
-activated.genes.edger <- topSig$table$genes[topSig$table$logFC > 0] # 132
-repressed.genes.edger <- topSig$table$genes[topSig$table$logFC < 0] # 69
+activated.genes.edger <- topSig$table$genes[topSig$table$logFC > 0] # 129
+repressed.genes.edger <- topSig$table$genes[topSig$table$logFC < 0] # 76
+
+top.edger <- top.edger$table
+top.edger <- top.edger[order(top.edger$genes), ]
+log.fold.change <- top.edger$logFC
+q.value <- top.edger$FDR
+genes.ids <- rownames(mirna.filt.counts)
+names(log.fold.change) <- genes.ids
+names(q.value) <- genes.ids
+activated.genes.edger <- genes.ids[log.fold.change > 1 & q.value < 0.05]
+activated.genes.edger <- activated.genes.edger[!is.na(activated.genes.edger)]
+repressed.genes.edger <- genes.ids[log.fold.change < - 1 & q.value < 0.05]
+repressed.genes.edger <- repressed.genes.edger[!is.na(repressed.genes.edger)]
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
-     xlim=c(-6,6),ylim = c(0,120),
+     xlim=c(-8,8),ylim = c(0,240),
      xlab="log2(Fold-change)",ylab="-log10(q-value)",cex.lab=1.5)
 points(x = log.fold.change[activated.genes.edger],
        y = log.q.val[activated.genes.edger],col="red",cex=0.8,pch=19)

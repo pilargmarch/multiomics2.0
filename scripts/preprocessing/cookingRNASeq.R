@@ -67,6 +67,22 @@ explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "loadings")
 
 #--------------- normalizing for GC content and length with cqn ---------------#
 load("results/preprocessing/cookingRNASeq/GC.length.RNA.rda")
+
+rna.filt.counts$`TCGA-A7-A26J-01B-02R-A277-07` <- NULL
+rna.filt.counts$`TCGA-A7-A26J-01A-11R-A169-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A26E-01A-11R-A169-07` <- NULL
+rna.filt.counts$`TCGA-A7-A26E-01B-06R-A277-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A13E-01A-11R-A12P-07` <- NULL
+rna.filt.counts$`TCGA-A7-A13E-01B-06R-A277-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A0DC-01A-11R-A00Z-07` <- sum(rna.filt.counts$`TCGA-A7-A0DC-01A-11R-A00Z-07`, rna.filt.counts$`TCGA-A7-A0DC-01B-04R-A22O-07`)/2
+rna.filt.counts$`TCGA-A7-A0DC-01B-04R-A22O-07` <- NULL
+
+rna.filt.counts$`TCGA-A7-A13D-01A-13R-A12P-07` <- NULL
+rna.filt.counts$`TCGA-A7-A13D-01B-04R-A277-07` <- NULL
+
 gc.length.rna <- as.data.frame(gc.length.rna)
 sizeFactors.rna <- colSums(rna.filt.counts)
 
@@ -120,8 +136,11 @@ cqnplot(rna.norm, n = 1, xlab = "GC content", lty = 1, ylim = c(1,7))
 cqnplot(rna.norm, n = 2, xlab = "length", lty = 1, ylim = c(1,7))
 
 #------------------------------- DEA with DESeq2 ------------------------------#
+barcodes <- get_IDs(rna.filt.counts)
+myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
+
 dds <- DESeqDataSetFromMatrix(countData = rna.filt.counts,
-                              colData = rna.sample.info,
+                              colData = myfactors,
                               design = ~ barcodes.condition)
 dds$barcodes.condition <- relevel(dds$barcodes.condition, ref = "normal")
 
@@ -153,7 +172,10 @@ points(x = log.fold.change[repressed.genes.deseq2],
        y = log.q.val[repressed.genes.deseq2],col="blue",cex=0.8,pch=19)
 
 source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
+DEGstoEntrez.result <- DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
+res.deseq2 <- DEGstoEntrez.result[[1]]
+activated.genes.deseq2 <- DEGstoEntrez.result[[2]]
+repressed.genes.deseq2 <- DEGstoEntrez.result[[3]]
 
 # write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
@@ -198,7 +220,10 @@ points(x = log.fold.change[activated.genes.limma],
 points(x = log.fold.change[repressed.genes.limma],
        y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
-DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
+DEGstoEntrez.result <- DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
+top.limma <- DEGstoEntrez.result[[1]]
+activated.genes.limma <- DEGstoEntrez.result[[2]]
+repressed.genes.limma <- DEGstoEntrez.result[[3]]
 
 # write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
@@ -241,6 +266,7 @@ repressed.genes.edger <- topSig$table$genes[topSig$table$logFC < 0]
 length(repressed.genes.edger) # 661
 
 top.edger <- top.edger$table
+top.edger <- top.edger[order(top.edger$genes), ]
 log.fold.change <- top.edger$logFC
 q.value <- top.edger$FDR
 genes.ids <- rownames(rna.filt.counts)
@@ -261,7 +287,11 @@ points(x = log.fold.change[repressed.genes.edger],
        y = log.q.val[repressed.genes.edger],col="blue",cex=0.8,pch=19)
 
 top.edger <- as.data.frame(top.edger)
-DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
+
+DEGstoEntrez.result <- DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
+top.edger <- DEGstoEntrez.result[[1]]
+activated.genes.edger <- DEGstoEntrez.result[[2]]
+repressed.genes.edger <- DEGstoEntrez.result[[3]]
 
 # write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 

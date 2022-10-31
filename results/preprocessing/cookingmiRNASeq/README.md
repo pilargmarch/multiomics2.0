@@ -18,10 +18,10 @@ GC bias was checked for again with `NOISeq`, where it seem to have been reduced.
 
 ## Analyzing differential expression
 
-Differential expression analysis was performed using `DESeq2`, `limma-voom` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 1 or < -1. Intersecting DEGs among the three methods were selected, giving a total of [119 miRNAs](/results/preprocessing/cookingmiRNASeq/common.miRNA.DEGs.txt) (a 24% of the filtered miRNAs and a 6% of the raw miRNAs), 66 being upregulated in cancer samples when compared to normal samples and 53 being downregulated.
+Differential expression analysis was performed using `DESeq2`, `limma-voom` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 1 or < -1. Intersecting DEGs among the three methods were selected, giving a total of [123 miRNAs](/results/preprocessing/cookingmiRNASeq/common.miRNA.DEGs.txt) (a 25% of the filtered miRNAs and a 6.5% of the raw miRNAs), 67 being upregulated in cancer samples when compared to normal samples and 56 being downregulated.
 
 |    DEGs     | DESeq2 | limma-voom | edgeR | Common |
 |:-----------:|:------:|:----------:|:-----:|:------:|
-| *Activated* |  133   |     77     |  132  |   66   |
-| *Repressed* |   81   |     93     |  69   |   53   |
-|   *Total*   | *214*  |   *170*    | *201* | *119*  |
+| *Activated* |  132   |     79     |  129  |   67   |
+| *Repressed* |   83   |     93     |  76   |   56   |
+|   *Total*   | *215*  |   *172*    | *205* | *123*  |

@@ -3,6 +3,7 @@ hsa-mir-1277
 hsa-mir-1301
 hsa-mir-130b
 hsa-mir-141
+hsa-mir-142
 hsa-mir-147b
 hsa-mir-17
 hsa-mir-181b-1

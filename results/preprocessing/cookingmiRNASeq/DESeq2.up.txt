@@ -126,7 +126,6 @@ hsa-mir-7706
 hsa-mir-877
 hsa-mir-885
 hsa-mir-9-2
-hsa-mir-9-3
 hsa-mir-92b
 hsa-mir-937
 hsa-mir-940

@@ -64,6 +64,27 @@ table(probe.0 == 0)
 #  364019 
 ```
 
+We need to remove duplicated patients.
+
+```{r, eval = FALSE}
+met.patients <- substr(rownames(met.sample.info), 1, 15)
+duplicated.met.patients <- which(duplicated(met.patients))
+# 30 188 189 192 198 199 310 314 546 643 644 657 719 720 801 815
+duplicated.met.patients <- unique(sort(c(duplicated.met.patients, duplicated.met.patients-1)))
+rownames(met.sample.info)[duplicated.met.patients]
+
+ [1] "TCGA-A7-A26F-01B-04D-A22R-05" "TCGA-A7-A26F-01A-21D-A16A-05" "TCGA-A7-A26J-01B-02D-A27B-05"
+ [4] "TCGA-A7-A26J-01A-11D-A16A-05" "TCGA-A7-A26J-01A-11D-A27B-05" "TCGA-A7-A13G-01B-04D-A22R-05"
+ [7] "TCGA-A7-A13G-01A-11D-A13K-05" "TCGA-A7-A26E-01A-11D-A27B-05" "TCGA-A7-A26E-01B-06D-A27B-05"
+[10] "TCGA-A7-A26E-01A-11D-A16A-05" "TCGA-B6-A1KC-01A-11D-A13K-05" "TCGA-B6-A1KC-01B-11D-A161-05"
+[13] "TCGA-AC-A2QH-01A-11D-A18O-05" "TCGA-AC-A2QH-01B-04D-A22R-05" "TCGA-AC-A3OD-01A-11D-A21R-05"
+[16] "TCGA-AC-A3OD-01B-06D-A22R-05"
+```
+
+```{r, eval = FALSE}
+met.beta.values[,c("TCGA-A7-A26F-01A-21D-A16A-05", "TCGA-A7-A26J-01A-11D-A16A-05", "TCGA-A7-A26J-01A-11D-A27B-05", "TCGA-A7-A13G-01A-11D-A13K-05", "TCGA-A7-A26E-01B-06D-A27B-05", "TCGA-A7-A26E-01A-11D-A16A-05", "TCGA-B6-A1KC-01A-11D-A13K-05", "TCGA-AC-A2QH-01B-04D-A22R-05", "TCGA-AC-A3OD-01A-11D-A21R-05")] <- NULL
+```
+
 # Converting
 
 Let's convert beta-values to M-values.
@@ -106,7 +127,6 @@ legend("topright", legend = c("Tumor" , "Normal" ), pch = 16, col = c("red", "bl
 
 ![](images/cookingMet/pca.beta.values.png)
 
-Plot beta values density.
 
 We can also plot the density of beta-values for 10,000 random samples.
 
@@ -143,6 +163,8 @@ Why do we use M-values for analyzing differential expression?
 library(limma)
 library(ggplot2)
 
+met.sample.info <- met.sample.info[-c(30, 188, 189, 192, 198, 199, 309, 314, 794), ]
+
 group <- as.factor(met.sample.info$sample_type)
 
 group <- relevel(group, ref = "Solid Tissue Normal")
@@ -162,8 +184,8 @@ names(q.value) <- genes.ids
 activated.genes.limma <- genes.ids[log.fold.change > 2 & q.value < 0.05]
 repressed.genes.limma <- genes.ids[log.fold.change < -2 & q.value < 0.05]
 
-length(activated.genes.limma) # 4400
-length(repressed.genes.limma) # 8763
+length(activated.genes.limma) # 8687
+length(repressed.genes.limma) # 4393
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -192,6 +214,8 @@ It is always useful to plot sample-wise methylation levels for the top different
 topOrderedDF <- read.csv(file = "results/preprocessing/cookingMet/limma.ordered.csv", sep = "\t")
 
 library(minfi)
+
+bval <- readRDS("data/cooked/met/bval.RDS")
 
 # plot the top 4 most significantly differentially methylated CpGs
 par(mfrow=c(2,2))
@@ -226,58 +250,29 @@ The testing now also takes into account that some CpGs are annotated to multiple
 
 A new feature of gometh and gsameth is the ability to restrict the input CpGs by genomic feature with the argument genomic.features. The possible options include "ALL", "TSS200", "TSS1500", "Body", "1stExon", "3'UTR", "5'UTR" and "ExonBnd", and the user may specify any combination. Please not that "ExonBnd" is not an annotated feature on 450K arrays. For example if you are interested in the promoter region only, you could specify genomic.features = c("TSS1500","TSS200","1stExon"). The default behaviour is to test all input CpGs sig.cpg even if the user specifies "ALL" and one or more other features.
 
-
-
 ```{r, eval = FALSE}
 library(missMethyl)
 library(limma)
 
 par(mfrow=c(1,1))
-gst <- gometh(sig.cpg=DMPs, all.cpg=all.CpG.sites, plot.bias=TRUE)
+gst <- gometh(sig.cpg=DMPs, all.cpg=all.CpG.sites, genomic.features = c("TSS1500", "TSS200", "5'UTR", "1stExon"), plot.bias=TRUE)
 
 # Top 10 GO categories
-topGO(gst, number=10)
+head(gst[order(gst$FDR), ], n = 10)
+
+           ONTOLOGY                                                                  TERM    N   DE         P.DE          FDR
+GO:0004930       MF                                   G protein-coupled receptor activity  732  150 3.046787e-25 3.469072e-21
+GO:0032501       BP                                      multicellular organismal process 7162 1043 1.639757e-25 3.469072e-21
+GO:0003700       MF                             DNA-binding transcription factor activity 1360  284 1.673472e-21 1.270277e-17
+GO:0000981       MF DNA-binding transcription factor activity, RNA polymerase II-specific 1316  277 4.131833e-21 1.678523e-17
+GO:0004888       MF                             transmembrane signaling receptor activity 1151  212 3.282019e-21 1.678523e-17
+GO:0005887       CC                                 integral component of plasma membrane 1618  309 4.422597e-21 1.678523e-17
+GO:0007275       BP                                    multicellular organism development 4701  762 8.898036e-21 2.894658e-17
+GO:0048731       BP                                                    system development 4250  704 1.484574e-20 4.225840e-17
+GO:0050877       BP                                                nervous system process 1367  257 4.025425e-20 1.018522e-16
+GO:0007399       BP                                            nervous system development 2371  458 5.131559e-20 1.168559e-16
 ```
 
 ![](images/cookingMet/bias.DEGs.png)
 
-From the output we can see many of the top GO categories correspond to immune system and T cell processes, which is unsurprising as the cell types being studied form part of the immune system.
-
 ![](images/cookingMet/gene.diagram.jpg)
-
-# Differential variability
-
-Rather than testing for differences in mean methylation, we may be interested in testing for differences between group variances. For example, it has been hypothesised that highly variable CpGs in cancer are important for tumour progression. Hence we may be interested in CpG sites that are consistently methylated in one group, but variably methylated in another group.
-
-Sample size is an important consideration when testing for differentially variable CpG sites. In order to get an accurate estimate of the group variances, larger sample sizes are required than for estimating group means. A good rule of thumb is to have at least ten samples in each group.
-
-We can test for differentially variable CpGs using the varFit function in the missMethyl package. The syntax for specifying which groups we are interested in testing is slightly different to the standard way a model is specified in limma, particularly for designs where an intercept is fitted (see missMethyl vignette for further details). For the ageing data, the design matrix includes an intercept term, and a term for age. The coef argument in the varFit function indicates which columns of the design matrix correspond to the intercept and grouping factor. Thus, for the ageing dataset we set coef=c(1,2). Note that design matrices without intercept terms are permitted, with specific contrasts tested using the contrasts.varFit function.
-
-```{r}
-# get M-values for analysis
-age.mVals <- getM(age.mSetSqFlt)
-
-design <- model.matrix(~factor(age.targets$Sample_Group))
-# Fit the model for differential variability
-# specifying the intercept and age as the grouping factor
-fitvar <- varFit(age.mVals, design = design, coef = c(1,2))
-
-# Summary of differential variability
-summary(decideTests(fitvar))
-
-topDV <- topVar(fitvar, coef=2)
-# Top 10 differentially variable CpGs between old vs. newborns
-topDV
-```
-
-Similarly to the differential methylation analysis, is it useful to plot sample-wise beta values for the differentially variable CpGs to ensure the significant results are not driven by artifacts or outliers (Figure 14).
-
-```{r}
-  # get beta values for ageing data
-age.bVals <- getBeta(age.mSetSqFlt)
-par(mfrow=c(2,2))
-sapply(rownames(topDV)[1:4], function(cpg){
-  plotCpg(age.bVals, cpg=cpg, pheno=age.targets$Sample_Group)
-})
-```
-
