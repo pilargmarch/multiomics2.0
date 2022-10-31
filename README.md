@@ -17,6 +17,7 @@ Final `.R` scripts used to generate the obtained results.
 - [cookingRNASeq.R](scripts/preprocessing/cookingRNASeq.R)
 - [cookingmiRNASeq.R](scripts/preprocessing/cookingmiRNASeq.R)
 - [cookingMet.R](scripts/preprocessing/cookingMet.R)
+- [cookingProt.R](scripts/preprocessing/cookingProt.R)
 
 ### 👫 [Associations](scripts/associations/)
 
@@ -34,6 +35,7 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 - [cookingRNASeq.md](reports/preprocessing/cookingRNASeq.md)
 - [cookingmiRNASeq.md](reports/preprocessing/cookingmiRNASeq.md)
 - [cookingMet.md](reports/preprocessing/cookingMet.md)
+- [cookingProt.md](reports/preprocessing/cookingProt.md)
 
 ### 👫 [Associations](reports/associations/)
 
@@ -47,7 +49,7 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 - [Cooking RNA-Seq data](results/preprocessing/cookingRNASeq)
 - [Cooking miRNA-Seq data](results/preprocessing/cookingmiRNASeq)
 - [Cooking methylation data](results/preprocessing/cookingMet)
-
+- [Cooking proteomics data](results/preprocessing/cookingProt)
 
 ### 👫 [Associations](results/associations/)
 
