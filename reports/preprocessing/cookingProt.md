@@ -4,6 +4,9 @@ Pilar González Marchante
 
 -   <a href="#loading" id="toc-loading">Loading</a>
 -   <a href="#exploring" id="toc-exploring">Exploring</a>
+-   <a href="#analyzing-differential-expression"
+    id="toc-analyzing-differential-expression">Analyzing differential
+    expression</a>
 
 # Loading
 
@@ -112,7 +115,8 @@ more than 1 Entrez IDs associated with them (for example,
 Aurora-ABC_p\_T288_T232_T198 has 6790, 9212 and 6795, corresponding to
 aurora kinase A, B and C, respectively). We could keep one at random or
 delete them altogether; as to not overcomplicate things, we decided to
-remove all instances with more than 1 Entrez IDs.
+remove all instances with more than 2 Entrez IDs; and for those with 2
+Entrez IDs, we kept the first one.
 
 ``` r
 library(dplyr)
@@ -160,8 +164,9 @@ explo.plot(myPCA, factor = "groups", plottype = "loadings")
 ```
 
 ![](images/cookingProt/pca.scores.png)
-![](images/cookingProt/pca.loadings.png) \# Analyzing differential
-expression
+![](images/cookingProt/pca.loadings.png)
+
+# Analyzing differential expression
 
 Since our data is already normalized, we need to use `limma`.
 

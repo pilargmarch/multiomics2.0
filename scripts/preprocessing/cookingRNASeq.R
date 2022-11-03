@@ -52,6 +52,8 @@ rna.filt.counts <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.con
 # save(rna.filt.counts, file = "data/cooked/RNA-Seq/RNA.filt.rda")
 
 #-------- checking for possible GC content and length bias with NOISeq --------#
+load("data/cooked/RNA-Seq/RNA.filt.rda")
+
 myexpdata.filt <- NOISeq::readData(data = rna.filt.counts, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 
 myexplengthbias.filt = dat(myexpdata.filt, factor = "barcodes.condition", type = "lengthbias")
@@ -90,8 +92,10 @@ rna.norm <- cqn(rna.filt.counts, lengths = gc.length.rna$length, x = gc.length.r
 # save(rna.norm, file = "data/cooked/RNA-Seq/RNA.norm.rda")
 
 cqnOffset <- rna.norm$glm.offset
-cqnNormFactors <- exp(cqnOffset)
-# save(cqnNormFactors, file = "data/cooked/RNA-Seq/RNA.normFactors.rda")
+normFactors <- exp(cqnOffset)
+# save(normFactors, file = "data/cooked/RNA-Seq/RNA.normFactors.rda")
+
+load("data/cooked/RNA-Seq/RNA.normFactors.rda")
 
 rna.norm.expression <- rna.norm$y + rna.norm$offset
 rna.norm.expression <- as.data.frame(rna.norm.expression)
@@ -136,6 +140,8 @@ cqnplot(rna.norm, n = 1, xlab = "GC content", lty = 1, ylim = c(1,7))
 cqnplot(rna.norm, n = 2, xlab = "length", lty = 1, ylim = c(1,7))
 
 #------------------------------- DEA with DESeq2 ------------------------------#
+load("data/cooked/RNA-Seq/RNA.filt.rda")
+
 barcodes <- get_IDs(rna.filt.counts)
 myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
 
@@ -159,8 +165,8 @@ activated.genes.deseq2 <- genes.ids[log.fold.change > 2 & q.value < 0.05]
 activated.genes.deseq2 <- activated.genes.deseq2[!is.na(activated.genes.deseq2)]
 repressed.genes.deseq2 <- genes.ids[log.fold.change < - 2 & q.value < 0.05]
 repressed.genes.deseq2 <- repressed.genes.deseq2[!is.na(repressed.genes.deseq2)]
-length(activated.genes.deseq2) # 670
-length(repressed.genes.deseq2) # 1148
+length(activated.genes.deseq2) # 1203
+length(repressed.genes.deseq2) # 635
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -171,25 +177,34 @@ points(x = log.fold.change[activated.genes.deseq2],
 points(x = log.fold.change[repressed.genes.deseq2],
        y = log.q.val[repressed.genes.deseq2],col="blue",cex=0.8,pch=19)
 
-source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez.result <- DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
-res.deseq2 <- DEGstoEntrez.result[[1]]
-activated.genes.deseq2 <- DEGstoEntrez.result[[2]]
-repressed.genes.deseq2 <- DEGstoEntrez.result[[3]]
+write.table(activated.genes.deseq2, file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(repressed.genes.deseq2, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
+# source(file = "scripts/preprocessing/DEGstoEntrez.R")
+# DEGstoEntrez.result <- DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
+# res.deseq2 <- DEGstoEntrez.result[[1]]
+# activated.genes.deseq2 <- DEGstoEntrez.result[[2]]
+# repressed.genes.deseq2 <- DEGstoEntrez.result[[3]]
 # write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
 # write.table(repressed.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 resOrdered <- res.deseq2[order(res.deseq2$padj),]
 head(resOrdered)
 resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
-# write.table(resOrderedDF, file = "results/preprocessing/cookingRNASeq/DESeq2.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+# write.table(resOrderedDF, file = "results/preprocessing/cookingRNASeq/DESeq2.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+
+write.table(activated.genes.deseq2, file = "results/preprocessing/cookingRNASeq/deseq2.up.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(repressed.genes.deseq2, file = "results/preprocessing/cookingRNASeq/deseq2.down.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 #------------------------------- DEA with limma -------------------------------#
 load("data/cooked/RNA-Seq/RNA.norm.rda")
 rna.norm.expression <- rna.norm$y + rna.norm$offset
+
+barcodes <- get_IDs(rna.norm.expression)
+
+barcodes$condition <- as.factor(barcodes$condition)
+barcodes$condition <- relevel(barcodes$condition, ref = "normal")
 
 design <- model.matrix(~ barcodes$condition)
 
@@ -208,8 +223,8 @@ names(q.value) <- genes.ids
 activated.genes.limma <- genes.ids[log.fold.change > 2 & q.value < 0.05]
 repressed.genes.limma <- genes.ids[log.fold.change < -2 & q.value < 0.05]
 
-length(activated.genes.limma) # 571
-length(repressed.genes.limma) # 933
+length(activated.genes.limma) # 612
+length(repressed.genes.limma) # 914
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -220,23 +235,26 @@ points(x = log.fold.change[activated.genes.limma],
 points(x = log.fold.change[repressed.genes.limma],
        y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
-DEGstoEntrez.result <- DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
-top.limma <- DEGstoEntrez.result[[1]]
-activated.genes.limma <- DEGstoEntrez.result[[2]]
-repressed.genes.limma <- DEGstoEntrez.result[[3]]
-
+# DEGstoEntrez.result <- DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
+# top.limma <- DEGstoEntrez.result[[1]]
+# activated.genes.limma <- DEGstoEntrez.result[[2]]
+# repressed.genes.limma <- DEGstoEntrez.result[[3]]
 # write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
 # write.table(repressed.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
-# write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+# write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+
+write.table(activated.genes.limma, file = "results/preprocessing/cookingRNASeq/limma.up.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(repressed.genes.limma, file = "results/preprocessing/cookingRNASeq/limma.down.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 #------------------------------- DEA with edgeR -------------------------------#
 y <- DGEList(counts = rna.filt.counts, lib.size = colSums(rna.filt.counts), group = barcodes$condition, genes = rownames(rna.filt.counts))
 
+load("data/cooked/RNA-Seq/RNA.normFactors.rda")
+# normFactors <- normFactors / exp(rowMeans(log(normFactors)))
 y$offset <- normFactors
 
 design <- model.matrix(~ barcodes$condition)
@@ -261,9 +279,9 @@ plotSmear(et, de.tags=detags, main="plotSmear")
 abline(h=c(-2,2), col="blue")
 
 activated.genes.edger <- topSig$table$genes[topSig$table$logFC > 0]
-length(activated.genes.edger) # 930
+length(activated.genes.edger) # 972
 repressed.genes.edger <- topSig$table$genes[topSig$table$logFC < 0]
-length(repressed.genes.edger) # 661
+length(repressed.genes.edger) # 586
 
 top.edger <- top.edger$table
 top.edger <- top.edger[order(top.edger$genes), ]
@@ -288,45 +306,46 @@ points(x = log.fold.change[repressed.genes.edger],
 
 top.edger <- as.data.frame(top.edger)
 
-DEGstoEntrez.result <- DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
-top.edger <- DEGstoEntrez.result[[1]]
-activated.genes.edger <- DEGstoEntrez.result[[2]]
-repressed.genes.edger <- DEGstoEntrez.result[[3]]
-
+# DEGstoEntrez.result <- DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
+# top.edger <- DEGstoEntrez.result[[1]]
+# activated.genes.edger <- DEGstoEntrez.result[[2]]
+# repressed.genes.edger <- DEGstoEntrez.result[[3]]
 # write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
 # write.table(repressed.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 topOrdered <- top.edger[order(top.edger$FDR),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
-# write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/edgeR.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+# write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/edgeR.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+
+write.table(activated.genes.edger, file = "results/preprocessing/cookingRNASeq/edger.up.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(repressed.genes.edger, file = "results/preprocessing/cookingRNASeq/edger.down.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 #----------------------------- intersecting DEGs ------------------------------#
-activated.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt")
-activated.genes.deseq2 <- as.vector(activated.genes.deseq2$V1)
-
-repressed.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt")
-repressed.genes.deseq2 <- as.vector(repressed.genes.deseq2$V1)
-
-activated.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.up.txt")
-activated.genes.limma <- as.vector(activated.genes.limma$V1)
-
-repressed.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.down.txt")
-repressed.genes.limma <- as.vector(repressed.genes.limma$V1)
-
-activated.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.up.txt")
-activated.genes.edger <- as.vector(activated.genes.edger$V1)
-
-repressed.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.down.txt")
-repressed.genes.edger <- as.vector(repressed.genes.edger$V1)
+# activated.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt")
+# activated.genes.deseq2 <- as.vector(activated.genes.deseq2$V1)
+# 
+# repressed.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt")
+# repressed.genes.deseq2 <- as.vector(repressed.genes.deseq2$V1)
+# 
+# activated.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.up.txt")
+# activated.genes.limma <- as.vector(activated.genes.limma$V1)
+# 
+# repressed.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.down.txt")
+# repressed.genes.limma <- as.vector(repressed.genes.limma$V1)
+# 
+# activated.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.up.txt")
+# activated.genes.edger <- as.vector(activated.genes.edger$V1)
+# 
+# repressed.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.down.txt")
+# repressed.genes.edger <- as.vector(repressed.genes.edger$V1)
 
 common.activated <- intersect(intersect(activated.genes.deseq2, activated.genes.edger), activated.genes.limma) 
-length(common.activated) # 452
+length(common.activated) # 535
 
 common.repressed <- intersect(intersect(repressed.genes.deseq2, repressed.genes.edger), repressed.genes.limma) 
-length(common.repressed) # 473
+length(common.repressed) # 486
 
-write.table(common.activated, file = "results/preprocessing/cookingRNASeq/all.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(common.activated, file = "results/preprocessing/cookingRNASeq/common.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/all.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)

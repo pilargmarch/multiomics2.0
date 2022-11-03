@@ -6,18 +6,14 @@ Low counts genes were filtered out with `NOISeq`'s `filtered.data` function usin
 
 ## Normalizing
 
-Sample-specific GC-content and length biases were observed using `NOIseq`, so we used `cqn` to normalize these effects (as well as the expected sequencing depth bias). This conditional quantile normalization method combines both within and between-lane (or sample) normalization and is based on a Poisson model for read counts. Lane-specific systematic biases, such as GC-content and length effects, are incorporated as smooth functions using naturla cubic splies and estimated using robust quantile regression. In order to account for distributional differences between lanes, a full-quantile normalization procedure is adopted. GC-content and length biases were checked for again with `NOISeq`, where they seem to have been reduced.
+Sample-specific GC-content and length biases were observed using `NOIseq`, so we used `cqn` to normalize these effects (as well as the expected sequencing depth bias). This conditional quantile normalization method combines both within and between-lane (or sample) normalization and is based on a Poisson model for read counts. Lane-specific systematic biases, such as GC-content and length effects, are incorporated as smooth functions using natural cubic splines and estimated using robust quantile regression. In order to account for distributional differences between lanes, a full-quantile normalization procedure is adopted. GC-content and length biases were checked for again with `NOISeq`, where they seem to have been reduced.
 
 ## Analyzing differential expression
 
-Differential expression analysis was performed using `DESeq2`, `limma` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 2 or < -2. Intersecting DEGs among the three methods were selected, giving a total of [921 genes](/results/preprocessing/cookingRNASeq/common.RNA.DEGs.txt) (a 4.8% of the filtered genes and a 1.5% of the raw genes), 484 being upregulated in cancer samples when compared to normal samples and 437 being downregulated. Only genes with available Entrez IDs were selected.
+Differential expression analysis was performed using `DESeq2`, `limma` and `edgeR`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 2 or < -2. Intersecting DEGs among the three methods were selected, giving a total of [1021 genes](/results/preprocessing/cookingRNASeq/common.RNA.DEGs.txt) (a 5.3% of the filtered genes and a 1.7% of the raw genes), 535 being upregulated in cancer samples when compared to normal samples and 486 being downregulated.
 
 |    DEGs     | DESeq2 | limma  | edgeR  | Common |
 |:-----------:|:------:|:------:|:------:|:------:|
-| *Activated* |  1047   |  551   |  871   |  484   |
-| *Repressed* |  567   |  833   |  531   |  437   |
-|   *Total*   | *1614* | *1384* | *1402* | *921*  |
-
-## Enrichment analysis
-
-TODO
+| *Activated* |  1203   |  612   |  972   |  535   |
+| *Repressed* |  635   |  914   |  586   |  486   |
+|   *Total*   | *1838* | *1526* | *1558* | *1021*  |

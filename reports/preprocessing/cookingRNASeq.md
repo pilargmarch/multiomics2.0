@@ -1590,34 +1590,38 @@ back the first one that occurs in the database. To add the gene symbol
 and Entrez ID, we call *mapIds* twice.
 
 ``` r
-source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez.result <- DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
-res.deseq2 <- DEGstoEntrez.result[[1]]
-activated.genes.deseq2 <- DEGstoEntrez.result[[2]]
-repressed.genes.deseq2 <- DEGstoEntrez.result[[3]]
+# source(file = "scripts/preprocessing/DEGstoEntrez.R")
+# DEGstoEntrez.result <- DEGstoEntrez(res = res.deseq2, activated.genes = activated.genes.deseq2, repressed.genes = repressed.genes.deseq2)
+# res.deseq2 <- DEGstoEntrez.result[[1]]
+# activated.genes.deseq2 <- DEGstoEntrez.result[[2]]
+# repressed.genes.deseq2 <- DEGstoEntrez.result[[3]]
+# write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# write.table(repressed.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
-Some of the tested genes don’t have an Entrez ID associated with them
-(whether because they’ve just been discovered or are hypothetical), so
-we’ll omit those to make our life easier, leaving us with 17191 genes.
-Out of the 1203 activated genes we ended up with 1047; and from the 635
-suppressed genes, we only have names for 567 of them.
+Since some of the tested genes don’t have an Entrez ID associated with
+them (they might have been discovered recently or be putative), after
+converting we lose some of the DEGs; thus we’ll only use this list when
+strictly necessary (if we were to perform GSEA with `ClusterProfiler`,
+for example). The resulting DEGs lists will be in the form of ENSEMBL
+IDs, as they are the same identifiers that our gene expression matrix
+has. We then have 1203 activated genes and 635 supressed ones; if we
+were to only keep DEGs with an Entrez ID, that would be only 1047
+upregulated and 635 downregulated.
 
 We’ll save both lists of DEGs (upregulated and downregulated) as well as
 the DEA results for all of the tested genes, ordered by adjusted
-p-value. All gene IDs will be Entrez to save us time in later analysis
-(e.g. GSEA).
+p-value.
 
 ``` r
-write.table(activated.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
-write.table(repressed.genes.deseq2$entrez, file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
 resOrdered <- res.deseq2[order(res.deseq2$padj),]
 head(resOrdered)
 resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
 write.table(resOrderedDF, file = "results/preprocessing/cookingRNASeq/DESeq2.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+
+write.table(activated.genes.deseq2, file = "results/preprocessing/cookingRNASeq/deseq2.up.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(repressed.genes.deseq2, file = "results/preprocessing/cookingRNASeq/deseq2.down.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
 
 ## limma
@@ -1625,7 +1629,8 @@ write.table(resOrderedDF, file = "results/preprocessing/cookingRNASeq/DESeq2.ord
 limma-voom transformation could not be applied, since the data is
 normalized (and thus has negative values) and there is no way to provide
 the function with the normalization factors like `DESeq2` and `edgeR`
-have, so `limma` was directly applied to cqn normalized expression data.
+have, so `limma` was directly applied to `cqn` normalized expression
+data.
 
 I left the design matrix as the intersection (without adding +1 or any
 other constants) in order not to have to make the contrasts, thus
@@ -1661,7 +1666,7 @@ activated.genes.limma <- genes.ids[log.fold.change > 2 & q.value < 0.05]
 repressed.genes.limma <- genes.ids[log.fold.change < -2 & q.value < 0.05]
 
 length(activated.genes.limma) # 612
-length(repressed.genes.limma) # 913
+length(repressed.genes.limma) # 914
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -1675,28 +1680,26 @@ y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
 ![](images/cookingRNASeq/volcano.plot.limma.png)
 
-`limma` gives us 612 upregulated genes and 913 downregulated genes. We
+`limma` gives us 612 upregulated genes and 914 downregulated genes. We
 save the results.
 
 ``` r
-source(file = "scripts/preprocessing/DEGstoEntrez.R")
-DEGstoEntrez.result <- DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
-top.limma <- DEGstoEntrez.result[[1]]
-activated.genes.limma <- DEGstoEntrez.result[[2]]
-repressed.genes.limma <- DEGstoEntrez.result[[3]]
-
-write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
-write.table(repressed.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# source(file = "scripts/preprocessing/DEGstoEntrez.R")
+# DEGstoEntrez.result <- DEGstoEntrez(res = top.limma, activated.genes = activated.genes.limma, repressed.genes = repressed.genes.limma)
+# top.limma <- DEGstoEntrez.result[[1]]
+# activated.genes.limma <- DEGstoEntrez.result[[2]]
+# repressed.genes.limma <- DEGstoEntrez.result[[3]]
+# write.table(activated.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# write.table(repressed.genes.limma$entrez, file = "results/preprocessing/cookingRNASeq/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
-```
 
-Again, we lost some genes that could not be mapped to Entrez IDs; we now
-have 551 activated DEGs and 833 repressed DEGs.
+write.table(activated.genes.limma, file = "results/preprocessing/cookingRNASeq/limma.up.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(repressed.genes.limma, file = "results/preprocessing/cookingRNASeq/limma.down.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+```
 
 ## edgeR
 
@@ -1748,11 +1751,12 @@ y <- estimateTagwiseDisp(y, design = design)
 plotBCV(y)
 ```
 
-![](images/cookingRNASeq/plotBCV.edger.png) In this case it is not
-correct to set the common dispersion for all genes as there is a lot of
-difference between the two dispersions and therefore this cannot be
-treated as a good representation of the dispersion of each gene, so gene
-by gene dispersion was necessary.
+![](images/cookingRNASeq/plotBCV.edger.png)
+
+In this case it is not correct to set the common dispersion for all
+genes as there is a lot of difference between the two dispersions and
+therefore this cannot be treated as a good representation of the
+dispersion of each gene, so gene by gene dispersion was necessary.
 
 After adjusting the dispersion parameters, we have to adjust the model
 and perform a significance test. exactTest does the two-by-two
@@ -1826,49 +1830,49 @@ Again, let’s save the results.
 
 ``` r
 top.edger <- as.data.frame(top.edger)
-source(file = "scripts/preprocessing/DEGstoEntrez.R")
-
-DEGstoEntrez.result <- DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
-top.edger <- DEGstoEntrez.result[[1]]
-activated.genes.edger <- DEGstoEntrez.result[[2]]
-repressed.genes.edger <- DEGstoEntrez.result[[3]]
-
-write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
-
-write.table(repressed.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# source(file = "scripts/preprocessing/DEGstoEntrez.R")
+# DEGstoEntrez.result <- DEGstoEntrez(res = top.edger, activated.genes = activated.genes.edger, repressed.genes = repressed.genes.edger)
+# top.edger <- DEGstoEntrez.result[[1]]
+# activated.genes.edger <- DEGstoEntrez.result[[2]]
+# repressed.genes.edger <- DEGstoEntrez.result[[3]]
+# write.table(activated.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# write.table(repressed.genes.edger$entrez, file = "results/preprocessing/cookingRNASeq/edgeR.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 topOrdered <- top.edger[order(top.edger$FDR),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
 write.table(topOrderedDF, file = "results/preprocessing/cookingRNASeq/edgeR.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+
+write.table(activated.genes.edger, file = "results/preprocessing/cookingRNASeq/edger.up.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(repressed.genes.edger, file = "results/preprocessing/cookingRNASeq/edger.down.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
 
 ## Intersecting DEGs
 
 ``` r
-activated.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt")
-activated.genes.deseq2 <- as.vector(activated.genes.deseq2$V1)
-
-repressed.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt")
-repressed.genes.deseq2 <- as.vector(repressed.genes.deseq2$V1)
-
-activated.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.up.txt")
-activated.genes.limma <- as.vector(activated.genes.limma$V1)
-
-repressed.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.down.txt")
-repressed.genes.limma <- as.vector(repressed.genes.limma$V1)
-
-activated.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.up.txt")
-activated.genes.edger <- as.vector(activated.genes.edger$V1)
-
-repressed.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.down.txt")
-repressed.genes.edger <- as.vector(repressed.genes.edger$V1)
+# activated.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.up.txt")
+# activated.genes.deseq2 <- as.vector(activated.genes.deseq2$V1)
+# 
+# repressed.genes.deseq2 <- read.table(file = "results/preprocessing/cookingRNASeq/DESeq2.down.txt")
+# repressed.genes.deseq2 <- as.vector(repressed.genes.deseq2$V1)
+# 
+# activated.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.up.txt")
+# activated.genes.limma <- as.vector(activated.genes.limma$V1)
+# 
+# repressed.genes.limma <- read.table(file = "results/preprocessing/cookingRNASeq/limma.down.txt")
+# repressed.genes.limma <- as.vector(repressed.genes.limma$V1)
+# 
+# activated.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.up.txt")
+# activated.genes.edger <- as.vector(activated.genes.edger$V1)
+# 
+# repressed.genes.edger <- read.table(file = "results/preprocessing/cookingRNASeq/edgeR.down.txt")
+# repressed.genes.edger <- as.vector(repressed.genes.edger$V1)
 
 common.activated <- intersect(intersect(activated.genes.deseq2, activated.genes.edger), activated.genes.limma) 
-length(common.activated) # 484
+length(common.activated) # 535
 
 common.repressed <- intersect(intersect(repressed.genes.deseq2, repressed.genes.edger), repressed.genes.limma) 
-length(common.repressed) # 437
+length(common.repressed) # 486
 
 write.table(common.activated, file = "results/preprocessing/cookingRNASeq/common.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
@@ -1877,9 +1881,9 @@ write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common
 
 |    DEGs     | DESeq2 | limma  | edgeR  | Common |
 |:-----------:|:------:|:------:|:------:|:------:|
-| *Activated* |  1047  |  551   |  871   |  484   |
-| *Repressed* |  567   |  833   |  531   |  437   |
-|   *Total*   | *1614* | *1384* | *1402* | *921*  |
+| *Activated* |  1203  |  612   |  972   |  535   |
+| *Repressed* |  635   |  914   |  586   |  486   |
+|   *Total*   | *1838* | *1526* | *1558* | *1021* |
 
-We have 921 DEGs, a 4.8% of the filtered genes (19,318) and a 1.5% of
+We have 1021 DEGs, a 5.3% of the filtered genes (19,318) and a 1.7% of
 the original genes (60,660).

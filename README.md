@@ -2,7 +2,7 @@
 ![Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](reports/cover.jpg)
 <sup>[Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](https://www.embl.org/news/science/charting-a-multi-omic-universe/)</sup>
 
-This is the repository for my Master's Final Thesis.
+This is the repository for my Master's Final Thesis. First, RNA-Seq, miRNA-Seq, methylation and proteomics data was selected and downloaded from TCGA. After the data was processed and tested for differential expression, regulatory associations between these omics were retrieved from various databases. Finally, relevant features, associations and gene expression were all put into different methods to try to come up with a regulatory model for gene expression in breast cancer.
 
 ## :dna: [Data](data/)
 RNA-Seq, miRNA-Seq, methylation and proteomics data used in this project, both as raw and cooked.
@@ -20,9 +20,15 @@ Final `.R` scripts used to generate the obtained results.
 - [cookingProt.R](scripts/preprocessing/cookingProt.R)
 
 ### 👫 [Associations](scripts/associations/)
+- [Transcription factors to genes]()
+- [miRNAs to genes]()
+- [Methylation/CpG sites to genes]()
+- [Proteins to genes]()
 
 ### 📈 [Models](scripts/models/)
-
+- [PaintOmics 4]()
+- [MORE]()
+- [pls-Multiblock]()
 
 ---
 
@@ -38,12 +44,21 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 - [cookingProt.md](reports/preprocessing/cookingProt.md)
 
 ### 👫 [Associations](reports/associations/)
+- [Transcription factors to genes]()
+- [miRNAs to genes]()
+- [Methylation/CpG sites to genes]()
+- [Proteins to genes]()
 
 ### 📈 [Models](reports/models/)
+- [PaintOmics 4]()
+- [MORE]()
+- [pls-Multiblock]()
 
 ---
 
 ## 📓 [Results](results/)
+
+Results tables, relevant features lists, etc... along with a summary of the process.
 
 ### 🍳 [Preprocessing](results/preprocessing/)
 - [Cooking RNA-Seq data](results/preprocessing/cookingRNASeq)
@@ -52,5 +67,12 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 - [Cooking proteomics data](results/preprocessing/cookingProt)
 
 ### 👫 [Associations](results/associations/)
+- [Transcription factors to genes]()
+- [miRNAs to genes]()
+- [Methylation/CpG sites to genes]()
+- [Proteins to genes]()
 
 ### 📈 [Models](results/models/)
+- [PaintOmics 4]()
+- [MORE]()
+- [pls-Multiblock]()

@@ -123,6 +123,7 @@ explo.plot(myPCA, factor = "groups", plottype = "loadings")
 ```
 ![](images/cookingProt/pca.scores.png)
 ![](images/cookingProt/pca.loadings.png)
+
 # Analyzing differential expression
 
 Since our data is already normalized, we need to use `limma`.
