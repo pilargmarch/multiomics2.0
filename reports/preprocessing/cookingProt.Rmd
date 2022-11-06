@@ -33,6 +33,7 @@ prot <- prot[-c(1,2,3,4,5)]
 first.30.samples <- prot[, 1:30]
 boxplot(first.30.samples)
 ```
+
 ![](images/cookingProt/boxplot.png)
 
 It seems our data is already normalized, which makes sense since it is stated that the data was median-centred and log2-transformed.
@@ -81,7 +82,7 @@ After removing 18 samples and 30 peptides, there are no missing values. We now h
 
 ```{r, eval = FALSE}
 library(dplyr)
-antibodies <- read.table("data/raw/prot/RPPA_Antibodies.txt", sep = "\t", header = TRUE, row.names = 1)
+antibodies <- read.table("reports/associations/protein-gene/RPPA_Antibodies.txt", sep = "\t", header = TRUE, row.names = 1)
 rownames(antibodies)<-gsub("-","",as.character(rownames(antibodies)))
 rownames(antibodies)<-gsub("_","",as.character(rownames(antibodies)))
 rownames(antibodies)<-toupper(rownames(antibodies))
@@ -97,7 +98,7 @@ prot <- prot[!(row.names(prot) %in% missing.peptides), ]
 
 prot$Entrez <- antibodies[existing.peptides, ]$NCBI_Entrez_Gene_ID
 
-write.table(prot, file = "data/cooked/prot/prot.txt", sep = "\t", quote = FALSE)
+write.table(prot, file = "reports/associations/protein-gene/prot.txt", sep = "\t", quote = FALSE)
 
 # after deleting duplicated Entrez IDs and keeping the most reliable peptide for it
 load("data/cooked/prot/prot.filt.rda")
@@ -121,6 +122,7 @@ par(cex = 0.75)
 explo.plot(myPCA, factor = "groups", plottype = "scores")
 explo.plot(myPCA, factor = "groups", plottype = "loadings")
 ```
+
 ![](images/cookingProt/pca.scores.png)
 ![](images/cookingProt/pca.loadings.png)
 
@@ -129,6 +131,8 @@ explo.plot(myPCA, factor = "groups", plottype = "loadings")
 Since our data is already normalized, we need to use `limma`.
 
 ```{r, eval = FALSE}
+load("data/cooked/prot/prot.filt.rda")
+
 library(limma)
 
 groups <- substr(colnames(prot), 13, 15)
@@ -149,11 +153,11 @@ genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
-activated.genes.limma <- genes.ids[log.fold.change > 0.5 & q.value < 0.05]
-repressed.genes.limma <- genes.ids[log.fold.change < -0.5 & q.value < 0.05]
+activated.genes.limma <- genes.ids[log.fold.change > 0 & q.value < 0.05]
+repressed.genes.limma <- genes.ids[log.fold.change < 0 & q.value < 0.05]
 
-length(activated.genes.limma) # 64
-length(repressed.genes.limma) # 28
+length(activated.genes.limma) # 122
+length(repressed.genes.limma) # 117
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,

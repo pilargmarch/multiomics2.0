@@ -20,13 +20,12 @@ Final `.R` scripts used to generate the obtained results.
 - [cookingProt.R](scripts/preprocessing/cookingProt.R)
 
 ### 👫 [Associations](scripts/associations/)
-- [Transcription factors to genes]()
-- [miRNAs to genes]()
-- [Methylation/CpG sites to genes]()
-- [Proteins to genes]()
+- [Transcription factors to genes](scripts/associations/TF2gene.R)
+- [miRNAs to genes](scripts/associations/miRNA2gene.R)
+- [Methylation/CpG sites to genes](scripts/associations/met2gene.R)
+- [Proteins to genes](scripts/associations/protein2gene.R)
 
 ### 📈 [Models](scripts/models/)
-- [PaintOmics 4]()
 - [MORE]()
 - [pls-Multiblock]()
 
@@ -44,13 +43,13 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 - [cookingProt.md](reports/preprocessing/cookingProt.md)
 
 ### 👫 [Associations](reports/associations/)
-- [Transcription factors to genes]()
-- [miRNAs to genes]()
-- [Methylation/CpG sites to genes]()
-- [Proteins to genes]()
+- [Transcription factors to genes](reports/associations/TF-gene/TF2gene.md)
+- [miRNAs to genes](reports/associations/miRNA-gene/miRNA2gene.md)
+- [Methylation/CpG sites to genes](reports/associations/met-gene/met2gene.md)
+- [Proteins to genes](reports/associations/protein-gene/protein2gene.md)
 
 ### 📈 [Models](reports/models/)
-- [PaintOmics 4]()
+- [PaintOmics 4](reports/models/paintomics)
 - [MORE]()
 - [pls-Multiblock]()
 
@@ -73,6 +72,6 @@ Results tables, relevant features lists, etc... along with a summary of the proc
 - [Proteins to genes]()
 
 ### 📈 [Models](results/models/)
-- [PaintOmics 4]()
+- [PaintOmics 4](results/models/paintomics)
 - [MORE]()
 - [pls-Multiblock]()

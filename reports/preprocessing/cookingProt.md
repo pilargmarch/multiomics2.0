@@ -120,7 +120,7 @@ Entrez IDs, we kept the first one.
 
 ``` r
 library(dplyr)
-antibodies <- read.table("data/raw/prot/RPPA_Antibodies.txt", sep = "\t", header = TRUE, row.names = 1)
+antibodies <- read.table("reports/associations/protein-gene/RPPA_Antibodies.txt", sep = "\t", header = TRUE, row.names = 1)
 rownames(antibodies)<-gsub("-","",as.character(rownames(antibodies)))
 rownames(antibodies)<-gsub("_","",as.character(rownames(antibodies)))
 rownames(antibodies)<-toupper(rownames(antibodies))
@@ -136,7 +136,7 @@ prot <- prot[!(row.names(prot) %in% missing.peptides), ]
 
 prot$Entrez <- antibodies[existing.peptides, ]$NCBI_Entrez_Gene_ID
 
-write.table(prot, file = "data/cooked/prot/prot.txt", sep = "\t", quote = FALSE)
+write.table(prot, file = "reports/associations/protein-gene/prot.txt", sep = "\t", quote = FALSE)
 
 # after deleting duplicated Entrez IDs and keeping the most reliable peptide for it
 load("data/cooked/prot/prot.filt.rda")

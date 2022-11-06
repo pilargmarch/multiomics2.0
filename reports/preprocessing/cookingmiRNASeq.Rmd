@@ -453,7 +453,7 @@ resOrdered <- res.deseq2[order(res.deseq2$padj),]
 head(resOrdered)
 resOrderedDF <- as.data.frame(resOrdered)
 resOrderedDF <- na.omit(resOrderedDF)
-write.table(resOrderedDF, file = "results/preprocessing/cookingmiRNASeq/DESeq2.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+write.table(resOrderedDF, file = "results/preprocessing/cookingmiRNASeq/DESeq2.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
 
 ## limma
@@ -504,7 +504,7 @@ write.table(repressed.genes.limma, file = "results/preprocessing/cookingmiRNASeq
 topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
-write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/limma.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
 
 ## limma-voom
@@ -551,7 +551,7 @@ write.table(repressed.genes.limma.voom, file = "results/preprocessing/cookingmiR
 topOrdered <- top.limma.voom[order(top.limma.voom$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
-write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/limma.voom.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/limma.voom.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
 
 ## edgeR
@@ -632,7 +632,7 @@ top.edger <- as.data.frame(top.edger)
 topOrdered <- top.edger[order(top.edger$FDR),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
-write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/edgeR.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/edgeR.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
 
 ## Intersecting DEGs
@@ -670,3 +670,13 @@ write.table(common.repressed, file = "results/preprocessing/cookingmiRNASeq/comm
 |   *Total*    | *215* | *172* | *205* | *123*  |
 
 We have 123 DEGs, a 25% of the filtered miRNAs (491) and a 6.5% of the original miRNAs (1,881).
+
+We will use the logFC results from `limma-voom` as input for Paintomics4.
+
+```{r, eval = FALSE}
+dea.limma.voom.mirna <- read.table("results/preprocessing/cookingmiRNASeq/limma.voom.ordered.tsv")
+mirna.expression <- as.data.frame(dea.limma.voom.mirna[, 1])
+rownames(mirna.expression) <- rownames(dea.limma.voom.mirna)
+
+write.table(mirna.expression, file = "results/associations/miRNA-gene/miRNA.expression.txt", sep = "\t", quote = FALSE, col.names = FALSE)
+```

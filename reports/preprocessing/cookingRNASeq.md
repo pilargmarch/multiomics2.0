@@ -1887,3 +1887,13 @@ write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common
 
 We have 1021 DEGs, a 5.3% of the filtered genes (19,318) and a 1.7% of
 the original genes (60,660).
+
+We will use the logFC results from `limma` as input for Paintomics4.
+
+``` r
+dea.limma.rna <- read.table("results/preprocessing/cookingRNASeq/limma.ordered.tsv")
+rna.expression <- as.data.frame(dea.limma.rna[, 1])
+rownames(rna.expression) <- rownames(dea.limma.rna)
+
+write.table(rna.expression, file = "results/preprocessing/cookingRNASeq/RNA.expression.txt", sep = "\t", quote = FALSE, col.names = FALSE)
+```
