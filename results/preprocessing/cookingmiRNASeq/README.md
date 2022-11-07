@@ -25,3 +25,5 @@ Differential expression analysis was performed using `DESeq2`, `limma-voom` and 
 | *Activated* |  132   |     79     |  129  |   67   |
 | *Repressed* |   83   |     93     |  76   |   56   |
 |   *Total*   | *215*  |   *172*    | *205* | *123*  |
+
+![](venn.diagram.miRNA.DEGs.png)

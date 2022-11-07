@@ -17,3 +17,5 @@ Differential expression analysis was performed using `DESeq2`, `limma` and `edge
 | *Activated* |  1203   |  612   |  972   |  535   |
 | *Repressed* |  635   |  914   |  586   |  486   |
 |   *Total*   | *1838* | *1526* | *1558* | *1021*  |
+
+![](venn.diagram.RNA.DEGs.png)

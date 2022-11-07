@@ -153,8 +153,8 @@ genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
-activated.genes.limma <- genes.ids[log.fold.change > 0 & q.value < 0.05]
-repressed.genes.limma <- genes.ids[log.fold.change < 0 & q.value < 0.05]
+activated.genes.limma <- genes.ids[log.fold.change > 0.5 & q.value < 0.05]
+repressed.genes.limma <- genes.ids[log.fold.change < -0.5 & q.value < 0.05]
 
 length(activated.genes.limma) # 122
 length(repressed.genes.limma) # 117
