@@ -20,12 +20,12 @@ Final `.R` scripts used to generate the obtained results.
 - [cookingProt.R](scripts/preprocessing/cookingProt.R)
 
 ### 👫 [Associations](scripts/associations/)
-- [Transcription factors to genes](scripts/associations/TF2gene.R)
-- [miRNAs to genes](scripts/associations/miRNA2gene.R)
-- [Methylation/CpG sites to genes](scripts/associations/met2gene.R)
-- [Proteins to genes](scripts/associations/protein2gene.R)
+- [From transcription factors to genes](scripts/associations/TF2gene.R)
+- [From miRNAs to genes](scripts/associations/miRNA2gene.R)
+- [From methylation sites to genes](scripts/associations/met2gene.R)
+- [From proteins to genes](scripts/associations/protein2gene.R)
 
-### 📈 [Models](scripts/models/)
+### 📈 [Integration](scripts/integration/)
 - [MORE]()
 - [pls-Multiblock]()
 
@@ -43,13 +43,13 @@ Exploratory `.Rmd` notebooks (knitted as `.md`) used to decide which pipelines t
 - [cookingProt.md](reports/preprocessing/cookingProt.md)
 
 ### 👫 [Associations](reports/associations/)
-- [Transcription factors to genes](reports/associations/TF-gene/TF2gene.md)
-- [miRNAs to genes](reports/associations/miRNA-gene/miRNA2gene.md)
-- [Methylation/CpG sites to genes](reports/associations/met-gene/met2gene.md)
-- [Proteins to genes](reports/associations/protein-gene/protein2gene.md)
+- [From transcription factors to genes](reports/associations/TF-gene/TF2gene.md)
+- [From miRNAs to genes](reports/associations/miRNA-gene/miRNA2gene.md)
+- [From methylation sites to genes](reports/associations/met-gene/met2gene.md)
+- [From proteins to genes](reports/associations/protein-gene/protein2gene.md)
 
-### 📈 [Models](reports/models/)
-- [PaintOmics 4](reports/models/paintomics)
+### 📈 [Integration](reports/integration/)
+- [PaintOmics 4](reports/integration/paintomics)
 - [MORE]()
 - [pls-Multiblock]()
 
@@ -66,12 +66,12 @@ Results tables, relevant features lists, etc... along with a summary of the proc
 - [Cooking proteomics data](results/preprocessing/cookingProt)
 
 ### 👫 [Associations](results/associations/)
-- [Transcription factors to genes]()
-- [miRNAs to genes]()
-- [Methylation/CpG sites to genes]()
-- [Proteins to genes]()
+- [From transcription factors to genes](results/associations/TF-gene/)
+- [From miRNAs to genes](results/associations/miRNA-gene/)
+- [From methylation sites to genes](results/associations/met-gene/)
+- [From proteins to genes](results/associations/protein-gene/)
 
-### 📈 [Models](results/models/)
-- [PaintOmics 4](results/models/paintomics)
+### 📈 [Integration](results/integration/)
+- [PaintOmics 4](results/integration/paintomics)
 - [MORE]()
 - [pls-Multiblock]()

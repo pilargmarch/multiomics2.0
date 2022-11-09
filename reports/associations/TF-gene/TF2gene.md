@@ -36,14 +36,15 @@ file.
 
 ``` r
 hTFtarget <- read.table(file = "reports/associations/TF-gene/TF-Target-information.hTFtarget.txt", sep = "\t")
-hTFtarget <- hTFtarget[, c(1:2)]
-colnames(hTFtarget) <- c("TF", "target")
+colnames(hTFtarget) <- c("TF", "target", "tissue")
 hTFtarget <- hTFtarget[-1, ]
 
 library(tidyr)
 hTFtarget <- separate_rows(hTFtarget, TF, sep = "/")
 
-length(unique(hTFtarget$TF)) # 494
+hTFtarget <- hTFtarget[grep("breast", hTFtarget$tissue), ]  # keep only the associations experimentally validated on breast tissue
+
+length(unique(hTFtarget$TF)) # 80
 
 library(biomaRt)
 mart = useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
@@ -59,8 +60,7 @@ duplicated.TFs <- which(duplicated(TF.conversion$external_gene_name))
 duplicated.TFs <- duplicated.TFs-1 # we keep the last one, as this is the main sequence as opposed to alternative sequences (haplotypes/patches)
 TF.conversion <- TF.conversion[-duplicated.TFs, ]
 
-missing.TFs <- setdiff(unique(hTFtarget$TF), TF.conversion$external_gene_name) # 10
-
+missing.TFs <- setdiff(unique(hTFtarget$TF), TF.conversion$external_gene_name) # 0
 write.table(missing.TFs, file = "reports/associations/TF-gene/missing.TFs.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
 
@@ -73,22 +73,22 @@ was to keep the main sequence (which happens to always be the last
 element) and delete the alternative ones (haplotypes/patches).
 
 ``` r
-missing.TFs <- read.table(file = "reports/associations/TF-gene/hgnc-symbol-check-TF.csv", sep = ",")
-colnames(missing.TFs) <- missing.TFs[1, ]
-missing.TFs <- missing.TFs[-1, ]
-
-missing.TF.conversion <- getBM(filters="external_gene_name",
-              attributes=c("ensembl_gene_id", "external_gene_name"), 
-              values=missing.TFs$`Approved symbol`,
-              mart=mart)
-
-TF.conversion <- rbind(TF.conversion, missing.TF.conversion)
+# missing.TFs <- read.table(file = "reports/associations/TF-gene/hgnc-symbol-check-TF.csv", sep = ",")
+# colnames(missing.TFs) <- missing.TFs[1, ]
+# missing.TFs <- missing.TFs[-1, ]
+# 
+# missing.TF.conversion <- getBM(filters="external_gene_name",
+#               attributes=c("ensembl_gene_id", "external_gene_name"), 
+#               values=missing.TFs$`Approved symbol`,
+#               mart=mart)
+# 
+# TF.conversion <- rbind(TF.conversion, missing.TF.conversion)
 ```
 
 Now let’s do the same, but for the target genes.
 
 ``` r
-length(unique(hTFtarget$target)) # 38183
+length(unique(hTFtarget$target)) # 32852
 
 mart = useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
 target.conversion <- getBM(filters="external_gene_name",
@@ -103,7 +103,7 @@ duplicated.targets <- which(duplicated(target.conversion$external_gene_name))
 duplicated.targets <- duplicated.targets-1 # we keep the last one, as this is the main sequence as opposed to alternative sequences (haplotypes/patches)
 target.conversion <- target.conversion[-duplicated.targets, ]
 
-missing.targets <- setdiff(unique(hTFtarget$target), target.conversion$external_gene_name) # 14635
+missing.targets <- setdiff(unique(hTFtarget$target), target.conversion$external_gene_name) # 11855
 
 write.table(missing.targets, file = "reports/associations/TF-gene/missing.targets.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
@@ -122,6 +122,8 @@ rownames(missing.target.conversion) <- c(1:length(missing.target.conversion$ense
 duplicated.targets <- which(duplicated(missing.target.conversion$external_gene_name))
 duplicated.targets <- duplicated.targets-1 # we keep the last one, as this is the main sequence as opposed to alternative sequences (haplotypes/patches)
 missing.target.conversion <- missing.target.conversion[-duplicated.targets, ]
+
+missing.target.conversion$external_gene_name <- missing.targets$Input[match(missing.target.conversion$external_gene_name, missing.targets$`Approved symbol`)] # replace new names by old names, so that it finds them in the associations
 
 target.conversion <- rbind(target.conversion, missing.target.conversion)
 ```
@@ -147,6 +149,8 @@ target.associations <- intersect(hTFtarget$target, targets$Gene_Symbol)
 TF.target.associations <- subset(hTFtarget, TF %in% TFs.associations)
 TF.target.associations <- subset(TF.target.associations, target %in% target.associations)
 
+TF.target.associations <- TF.target.associations[, -3] # delete tissue column
+
 write.table(TF.target.associations, file = "results/associations/TF-gene/TF.associations.gene.symbol.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
 
@@ -165,9 +169,9 @@ write.table(TF.target.associations, file = "results/associations/TF-gene/TF.asso
 rna.expression <- read.table(file = "results/preprocessing/cookingRNASeq/RNA.expression.txt")
 
 all.TFs.and.targets <- c(TF.target.associations$TF, TF.target.associations$target)
-length(unique(all.TFs.and.targets)) # 14788
+length(unique(all.TFs.and.targets)) # 15152
 
-TF.expression <- subset(rna.expression, V1 %in% TF.target.associations$TF) # matrix with 459 transcription factors
+TF.expression <- subset(rna.expression, V1 %in% TF.target.associations$TF) # matrix with 80 transcription factors
 
 write.table(TF.expression, file = "results/associations/TF-gene/TF.expression.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
@@ -176,7 +180,7 @@ Same thing for our relevant features.
 
 ``` r
 rna.DEGs <- read.table(file = "results/preprocessing/cookingRNASeq/common.RNA.DEGs.txt")
-TF.DEGs <- subset(rna.DEGs, V1 %in% TF.target.associations$TF) # 32 DEGs are transcription factors
+TF.DEGs <- subset(rna.DEGs, V1 %in% TF.target.associations$TF) # 7 DEGs are transcription factors
 write.table(TF.DEGs, file = "results/associations/TF-gene/TF.DEGs.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
 
@@ -186,6 +190,6 @@ relevant TF appears.
 ``` r
 TF.target.associations <- read.table(file = "results/associations/TF-gene/TF.associations.tab")
 TF.DEGs <- read.table(file = "results/associations/TF-gene/TF.DEGs.tab")
-relevant.TF.associations <- subset(TF.target.associations, V1 %in% TF.DEGs$V1) # 63261 TF-gene associations are relevant per this criterion
+relevant.TF.associations <- subset(TF.target.associations, V1 %in% TF.DEGs$V1) # 17941 TF-gene associations are relevant per this criterion
 write.table(relevant.TF.associations, file = "results/associations/TF-gene/DEG.TF.associations.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
