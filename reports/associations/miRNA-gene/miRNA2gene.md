@@ -122,3 +122,13 @@ head(miRNA2gene)
 12 hsa-mir-107    CSNK1G3
 14 hsa-mir-107     DICER1 
 ```
+
+As an approximation we’ll choose relevant associations as those where a
+relevant miRNA appears.
+
+``` r
+miRNA.associations <- read.table(file = "results/associations/miRNA-gene/all_miRWalk_miRNA_Targets.txt", header = TRUE)
+miRNA.DEGs <- read.table(file = "results/preprocessing/cookingmiRNASeq/common.miRNA.DEGs.txt")
+relevant.miRNA.associations <- subset(miRNA.associations, mirbase_id %in% miRNA.DEGs$V1) # 35 miRNA-gene associations are relevant per this criterion
+write.table(relevant.miRNA.associations, file = "results/associations/miRNA-gene/DEG_miRWalk_miRNA_Targets.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+```

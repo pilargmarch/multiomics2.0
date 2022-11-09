@@ -179,3 +179,13 @@ rna.DEGs <- read.table(file = "results/preprocessing/cookingRNASeq/common.RNA.DE
 TF.DEGs <- subset(rna.DEGs, V1 %in% TF.target.associations$TF) # 32 DEGs are transcription factors
 write.table(TF.DEGs, file = "results/associations/TF-gene/TF.DEGs.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
+
+As an approximation we’ll choose relevant associations as those where a
+relevant TF appears.
+
+``` r
+TF.target.associations <- read.table(file = "results/associations/TF-gene/TF.associations.tab")
+TF.DEGs <- read.table(file = "results/associations/TF-gene/TF.DEGs.tab")
+relevant.TF.associations <- subset(TF.target.associations, V1 %in% TF.DEGs$V1) # 63261 TF-gene associations are relevant per this criterion
+write.table(relevant.TF.associations, file = "results/associations/TF-gene/DEG.TF.associations.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+```
