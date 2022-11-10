@@ -2,36 +2,31 @@ Downloading TCGA-BRCA data
 ================
 Pilar González Marchante
 
-- <a href="#what-is-tcga-brca" id="toc-what-is-tcga-brca">What is
-  TCGA-BRCA?</a>
-- <a href="#how-to-download-tcga-data-with-tcgabiolinks"
-  id="toc-how-to-download-tcga-data-with-tcgabiolinks">How to download
-  TCGA data with <code>TCGAbiolinks</code></a>
-- <a href="#finding-intersecting-samples-for-all-omics"
-  id="toc-finding-intersecting-samples-for-all-omics">Finding intersecting
-  samples for all omics</a>
-- <a
-  href="#downloading-intersecting-samples-for-rna-seq-mirna-seq-and-methylation"
-  id="toc-downloading-intersecting-samples-for-rna-seq-mirna-seq-and-methylation">Downloading
-  intersecting samples for RNA-Seq, miRNA-Seq and methylation</a>
-- <a
-  href="#downloading-intersecting-samples-for-rna-seq-mirna-seq-methylation-and-proteomics"
-  id="toc-downloading-intersecting-samples-for-rna-seq-mirna-seq-methylation-and-proteomics">Downloading
-  intersecting samples for RNA-Seq, miRNA-Seq, methylation and
-  proteomics</a>
+-   <a href="#what-is-tcga-brca" id="toc-what-is-tcga-brca">What is
+    TCGA-BRCA?</a>
+-   <a href="#how-to-download-tcga-data-with-tcgabiolinks"
+    id="toc-how-to-download-tcga-data-with-tcgabiolinks">How to download
+    TCGA data with <code>TCGAbiolinks</code></a>
+-   <a href="#finding-intersecting-samples-for-all-omics"
+    id="toc-finding-intersecting-samples-for-all-omics">Finding intersecting
+    samples for all omics</a>
+-   <a
+    href="#downloading-intersecting-samples-for-rna-seq-mirna-seq-and-methylation"
+    id="toc-downloading-intersecting-samples-for-rna-seq-mirna-seq-and-methylation">Downloading
+    intersecting samples for RNA-Seq, miRNA-Seq and methylation</a>
 
 # What is TCGA-BRCA?
 
 When looking for a suitable data set, the minimum requirements to
 satisfy were the following:
 
-- Has gene expression data (such as RNA-Seq).
-- Has data for at least 2 regulatory omics (miRNA-Seq, ChIP-Seq,
-  ATAC-Seq, DNA methylation, etc.).
-- Is related to human disease.
-- Has clinical variables and more importantly, survival time.
-- Has data for the same omics types for at least 100 patients.
-- Needs to state clearly if data is raw or normalized, and if so, how.
+-   Has gene expression data (such as RNA-Seq).
+-   Has data for at least 2 regulatory omics (miRNA-Seq, ChIP-Seq,
+    ATAC-Seq, DNA methylation, etc.).
+-   Is related to human disease.
+-   Has clinical variables and more importantly, survival time.
+-   Has data for the same omics types for at least 100 patients.
+-   Needs to state clearly if data is raw or normalized, and if so, how.
 
 In the end, we opted for The Cancer Genome Atlas Breast Cancer
 (**TCGA-BRCA**) data set, which at the time of writing (Data Release
@@ -40,14 +35,14 @@ v33.0, released on May 3 2022) had on GDC Data Portal 1,098 cases and
 files than cases; and not all patients were measured for all data
 types). The data categories available are:
 
-- **Transcriptome profiling**: by RNA-Seq (Gene Expression
-  Quantification) and miRNA-Seq (Isoform Expression Quantification and
-  miRNA Expression Quantification).
-- **SNV**: Simple Nucleotide Variation by WXS.
-- **CNV**: Copy Number Variation by genotyping array.
-- **Methylation**: DNA methylation by methylation array.
-- **Proteome profiling**: by Reverse Phase Protein Array.
-- **Clinical data**.
+-   **Transcriptome profiling**: by RNA-Seq (Gene Expression
+    Quantification) and miRNA-Seq (Isoform Expression Quantification and
+    Isoform Expression Quantification).
+-   **SNV**: Simple Nucleotide Variation by WXS.
+-   **CNV**: Copy Number Variation by genotyping array.
+-   **Methylation**: DNA methylation by methylation array.
+-   **Proteome profiling**: by Reverse Phase Protein Array.
+-   **Clinical data**.
 
 ![](images/downloadingTCGA/TCGA-BRCA-categories.png)
 
@@ -129,7 +124,7 @@ query.mirna <- GDCquery(
     data.category = "Transcriptome Profiling",
     experimental.strategy = "miRNA-Seq",
     workflow.type = "BCGSC miRNA Profiling",
-    data.type = "miRNA Expression Quantification",
+    data.type = "Isoform Expression Quantification",
     data.format = "TXT"
 )
  
@@ -169,8 +164,7 @@ length(common.samples.prot) # 647 samples
 
 We have **853 samples with data for expression, miRNA-Seq and
 methylation**. If we add **proteomics data, we end up with 647
-samples**. Let’s download two versions of the data sets: one without and
-one with proteomics data (with.prot).
+samples**.
 
 # Downloading intersecting samples for RNA-Seq, miRNA-Seq and methylation
 
@@ -192,11 +186,13 @@ query.mirna <- GDCquery(
     data.category = "Transcriptome Profiling",
     experimental.strategy = "miRNA-Seq",
     workflow.type = "BCGSC miRNA Profiling",
-    data.type = "miRNA Expression Quantification",
+    data.type = "Isoform Expression Quantification",
     data.format = "TXT",
     barcode = common.samples,
     sample.type = c("Primary Tumor", "Solid Tissue Normal")
 )
+
+write.table(getResults(query.mirna), file = "results/preprocessing/cookingmiRNASeq/mirna.metadata.txt", quote = FALSE, sep = "\t", row.names = FALSE)
 
 query.met <- GDCquery(
     project = "TCGA-BRCA",
@@ -206,6 +202,16 @@ query.met <- GDCquery(
     barcode = common.samples,
     data.type = "Methylation Beta Value",
     sample.type = c("Primary Tumor", "Solid Tissue Normal")
+)
+
+query.prot <- GDCquery(
+  project = "TCGA-BRCA",
+  data.category = "Proteome Profiling",
+  legacy = FALSE,
+  data.type = "Protein Expression Quantification",
+  experimental.strategy = "Reverse Phase Protein Array",
+  barcode = common.samples.prot,
+  sample.type = c("Primary Tumor", "Solid Tissue Normal")
 )
 ```
 
@@ -224,6 +230,9 @@ mirna <- GDCprepare(query = query.mirna, save = TRUE, save.filename = "data/raw/
 
 GDCdownload(query = query.met, method = "api")
 met <- GDCprepare(query = query.met, save = TRUE, save.filename = "data/raw/met/met.rda")
+
+GDCdownload(query = query.prot, method = "api")
+prot <- GDCprepare(query = query.prot, save = TRUE, save.filename = "data/raw/prot/prot.rda")
 ```
 
 Since we saved it to `.RData` files, we can easily load the objects
@@ -235,71 +244,6 @@ load("data/raw/RNA-Seq/RNA.rda")
 load("data/raw/miRNA-Seq/miRNA.rda")
  
 load("data/raw/met/met.rda")
-```
-
-# Downloading intersecting samples for RNA-Seq, miRNA-Seq, methylation and proteomics
-
-For convenience, let’s re-download the samples that also have proteomics
-data, using the reduced list of barcodes.
-
-``` r
-query.exp <- GDCquery(
-    project = "TCGA-BRCA",
-    data.category = "Transcriptome Profiling",
-    data.type = "Gene Expression Quantification", 
-    workflow.type = "STAR - Counts",
-    barcode = common.samples.prot,
-    sample.type = c("Primary Tumor", "Solid Tissue Normal")
-)
-
-query.mirna <- GDCquery(
-    project = "TCGA-BRCA",
-    data.category = "Transcriptome Profiling",
-    experimental.strategy = "miRNA-Seq",
-    workflow.type = "BCGSC miRNA Profiling",
-    data.type = "miRNA Expression Quantification",
-    data.format = "TXT",
-    barcode = common.samples.prot,
-    sample.type = c("Primary Tumor", "Solid Tissue Normal")
-)
- 
-query.met <- GDCquery(
-    project = "TCGA-BRCA",
-    data.category = "DNA Methylation",
-    legacy = FALSE,
-    platform = c("Illumina Human Methylation 450"),
-    barcode = common.samples.prot,
-    data.type = "Methylation Beta Value",
-    sample.type = c("Primary Tumor", "Solid Tissue Normal")
-)
- 
-query.prot <- GDCquery(
-  project = "TCGA-BRCA",
-  data.category = "Proteome Profiling",
-  legacy = FALSE,
-  data.type = "Protein Expression Quantification",
-  experimental.strategy = "Reverse Phase Protein Array",
-  barcode = common.samples.prot,
-  sample.type = c("Primary Tumor", "Solid Tissue Normal")
-)
- 
-GDCdownload(query = query.exp, method = "api")
-rna.with.prot <- GDCprepare(query = query.exp, save = TRUE, save.filename = "data/raw/RNA-Seq/RNA.with.prot.rda")
- 
-GDCdownload(query = query.mirna, method = "api")
-mirna.with.prot <- GDCprepare(query = query.mirna, save = TRUE, save.filename = "data/raw/miRNA-Seq/miRNA.with.prot.rda")
- 
-GDCdownload(query = query.met, method = "api")
-met.with.prot <- GDCprepare(query = query.met, save = TRUE, save.filename = "data/raw/met/met.with.prot.rda")
- 
-GDCdownload(query = query.prot, method = "api")
-prot <- GDCprepare(query = query.prot, save = TRUE, save.filename = "data/raw/prot/prot.rda")
- 
-load("data/raw/RNA-Seq/RNA.with.prot.rda")
- 
-load("data/raw/miRNA-Seq/miRNA.with.prot.rda")
-
-load("data/raw/met/met.with.prot.rda")
 
 load("data/raw/prot/prot.rda")
 ```
