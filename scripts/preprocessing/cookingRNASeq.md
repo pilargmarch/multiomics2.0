@@ -427,7 +427,7 @@ function.
 ``` r
 mydata <- NOISeq::readData(data = rna.raw.counts, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
 
-myfirst50data <- NOISeq::readData(data = rna.raw.counts[, 1:50], factors = myfactors[1:50, ], length = mylength[1:50], gc = mygc[1:50], biotype = mybiotypes[1:50], chromosome = mychroms[1:50, ]) # for plots and tests that require a smaller sample size
+myfirst50data <- NOISeq::readData(data = rna.raw.counts[, 1:50], factors = myfactors[1:50, ], length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms) # for plots and tests that require a smaller sample size
 ```
 
 Genes with very low counts in all samples provide little evidence for
@@ -448,28 +448,36 @@ But first, we’ll explore the raw counts a bit to later help us choose a
 filtering method.
 
 ``` r
-boxplot(log10(rna.raw.counts[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(rna.raw.counts[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(rna.raw.counts), 6, 12)[1:50], main = "Unfiltered RNA-Seq counts")
 ```
 
 ![](images/cookingRNASeq/boxplot.raw.png)
 
 ``` r
 mybiodetection <- dat(mydata, k = 0, type = "biodetection", factor = NULL)
-par(mfrow = c(1,2))
+par(mfrow = c(1, 2))
 explo.plot(mybiodetection, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
 ```
 
 ![](images/cookingRNASeq/mybiodetection.png)
 
 ``` r
-[1] "Percentage of protein_coding biotype in each sample:"
-TCGA-E2-A1L7-01A-11R-A144-07 
-                     53.5015 
-TCGA-E2-A1L7-11A-33R-A144-07 
-                     51.4557 
-[1] "Confidence interval at 95% for the difference of percentages: TCGA-E2-A1L7-01A-11R-A144-07 - TCGA-E2-A1L7-11A-33R-A144-07"
-[1] 1.4823 2.6094
-[1] "The percentage of this biotype is significantly DIFFERENT for these two samples (p-value = 1.012e-12 )."
+dev.off()
+par(mfrow = c(1, 2), cex.axis = 0.6)
+explo.plot(mybiodetection, samples = c(1, 2), toplot = "protein_coding", plottype = "persample")
+```
+
+![](images/cookingRNASeq/mybiodetection.persample.png)
+
+``` r
+# [1] "Percentage of protein_coding biotype in each sample:"
+# TCGA-E2-A1L7-01A-11R-A144-07 
+#                      53.5015 
+# TCGA-E2-A1L7-11A-33R-A144-07 
+#                      51.4557 
+# [1] "Confidence interval at 95% for the difference of percentages: TCGA-E2-A1L7-01A-11R-A144-07 - TCGA-E2-A1L7-11A-33R-A144-07"
+# [1] 1.4823 2.6094
+# [1] "The percentage of this biotype is significantly DIFFERENT for these two samples (p-value = 1.012e-12 )."
 ```
 
 How shall we choose a CPM threshold? The sensitivity plot can help us.
@@ -478,11 +486,13 @@ We can see that most features have between 0 and 1 CPM for these first
 speaking.
 
 ``` r
-mycountsbio = dat(myfirst50data, factor = NULL, type = "countsbio")
-explo.plot(mycountsbio, toplot = 1, samples = NULL, plottype = "barplot")
+mycountsbio = dat(mydata, factor = NULL, type = "countsbio")
+explo.plot(mycountsbio, toplot = 1, samples = c(1:50), plottype = "barplot")
+explo.plot(mycountsbio, toplot = "global", samples = 1, plottype = "boxplot")
 ```
 
-![](images/cookingRNASeq/mycountsbio.png)
+![](images/cookingRNASeq/mycountsbio.barplot.png)
+![](images/cookingRNASeq/mycountsbio.boxplot.png)
 
 It can also help to visualize the log2(cpm) as histogram and density
 plots. In them we see a bimodal distribution that can be split with a
@@ -505,23 +515,29 @@ filter_threshold <- log2(0.5)
 
 ggplot() + aes(x=mean_log_cpm) +
     geom_histogram(binwidth=0.2) +
-    geom_vline(xintercept=filter_threshold) +
-    ggtitle("Histogram of logCPM before filtering")
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Unfiltered RNA-Seq counts") +
+    labs(x = "logCPM", y = "Frequency") + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=2.1, geom="label")
 ```
 
-![](images/cookingRNASeq/histogram.logCPM.png)
+![](images/cookingRNASeq/histogram.logcpm.unfiltered.png)
 
 ``` r
 ggplot() + aes(x=mean_log_cpm) +
     geom_density() +
-    geom_vline(xintercept=filter_threshold) +
-    ggtitle("Density plot of logCPM before filtering") +
-    xlim(-6.1, 13.5)
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Unfiltered RNA-Seq counts") +
+    xlim(-6.1, 13.5) + 
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=1.5, geom="label") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(x = "logCPM", y = "Density")
 
 summary(colSums(rna.raw.counts))
 ```
 
-![](images/cookingRNASeq/density.logCPM.png)
+![](images/cookingRNASeq/density.logcpm.unfiltered.png)
 
 So let’s try CPM filtering with a `CPM threshold = 0.2, 0.5 and 1` and a
 `cv.cutoff = 500`, so that we remove those features with low expression
@@ -539,28 +555,28 @@ myfiltWilcoxon <- filtered.data(rna.raw.counts, factor = myfactors$barcodes.cond
 ```
 
 ``` r
-boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM02), 6, 12)[1:50], main = "Filtered RNA-Seq counts with CPM > 0.2")
 ```
 
 ![CPM filtering with threshold =
 0.2](images/cookingRNASeq/boxplot.filt.CPM.02.png)
 
 ``` r
-boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM05), 6, 12)[1:50], main = "Filtered RNA-Seq counts with CPM > 0.5")
 ```
 
 ![CPM filtering with threshold =
 0.5](images/cookingRNASeq/boxplot.filt.CPM.05.png)
 
 ``` r
-boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM1), 6, 12)[1:50], main = "Filtered RNA-Seq counts with CPM > 1")
 ```
 
 ![CPM filtering with threshold =
 1](images/cookingRNASeq/boxplot.filt.CPM.1.png)
 
 ``` r
-boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltWilcoxon), 6, 12)[1:50], main = "Filtered RNA-Seq counts with Wilcoxon test")
 ```
 
 ![Wilcoxon filtering](images/cookingRNASeq/boxplot.filt.Wilcoxon.png)
@@ -587,6 +603,13 @@ explo.plot(mybiodetectionCPM02, samples = c(1, 2), toplot = "protein_coding", pl
 0.2](images/cookingRNASeq/mybiodetection.CPM.02.png)
 
 ``` r
+mycountsbioCPM02 = dat(myCPMdata02, factor = NULL, type = "countsbio")
+explo.plot(mycountsbioCPM02, toplot = "global", samples = 1, plottype = "boxplot")
+```
+
+![](images/cookingRNASeq/mycountsbio.boxplot.CPM02.png)
+
+``` r
 mybiodetectionCPM05 <- dat(myCPMdata05, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionCPM05, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
@@ -594,6 +617,13 @@ explo.plot(mybiodetectionCPM05, samples = c(1, 2), toplot = "protein_coding", pl
 
 ![CPM filtering with threshold =
 0.5](images/cookingRNASeq/mybiodetection.CPM.05.png)
+
+``` r
+mycountsbioCPM05 = dat(myCPMdata05, factor = NULL, type = "countsbio")
+explo.plot(mycountsbioCPM05, toplot = "global", samples = 1, plottype = "boxplot")
+```
+
+![](images/cookingRNASeq/mycountsbio.boxplot.CPM05.png)
 
 ``` r
 mybiodetectionCPM1 <- dat(myCPMdata1, k = 0, type = "biodetection", factor = NULL)
@@ -605,6 +635,13 @@ explo.plot(mybiodetectionCPM1, samples = c(1, 2), toplot = "protein_coding", plo
 1](images/cookingRNASeq/mybiodetection.CPM.1.png)
 
 ``` r
+mycountsbioCPM1 = dat(myCPMdata1, factor = NULL, type = "countsbio")
+explo.plot(mycountsbioCPM1, toplot = "global", samples = 1, plottype = "boxplot")
+```
+
+![](images/cookingRNASeq/mycountsbio.boxplot.CPM1.png)
+
+``` r
 mybiodetectionWilcoxon <- dat(myWilcoxondata, k = 0, type = "biodetection", factor = NULL)
 par(mfrow = c(1,2))
 explo.plot(mybiodetectionWilcoxon, samples = c(1, 2), toplot = "protein_coding", plottype = "comparison")
@@ -613,11 +650,30 @@ explo.plot(mybiodetectionWilcoxon, samples = c(1, 2), toplot = "protein_coding",
 ![](images/cookingRNASeq/mybiodetection.Wilcoxon.png)
 
 ``` r
+mycountsbioWilcoxon = dat(myWilcoxondata, factor = NULL, type = "countsbio")
+explo.plot(mycountsbioWilcoxon, toplot = "global", samples = 1, plottype = "boxplot")
+```
+
+![](images/cookingRNASeq/mycountsbio.boxplot.Wilcoxon.png)
+
+``` r
 sum(mydata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19916 protein coding genes
 sum(myCPMdata02@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 16021 protein coding genes
 sum(myCPMdata05@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 15434 protein coding genes
 sum(myCPMdata1@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 14772 protein coding genes
 sum(myWilcoxondata@featureData@data$Biotype=="protein_coding", na.rm=TRUE) # 19391 protein coding genes
+
+sum(mydata@featureData@data$Biotype=="lncRNA", na.rm=TRUE) # 16828 long non coding RNAs
+sum(myCPMdata02@featureData@data$Biotype=="lncRNA", na.rm=TRUE) # 4394 long non coding RNAs
+sum(myCPMdata05@featureData@data$Biotype=="lncRNA", na.rm=TRUE) # 2662 long non coding RNAs
+sum(myCPMdata1@featureData@data$Biotype=="lncRNA", na.rm=TRUE) # 1683 long non coding RNAs
+sum(myWilcoxondata@featureData@data$Biotype=="lncRNA", na.rm=TRUE) # 16079 long non coding RNAs
+
+length(grep("pseudogene", x = mydata@featureData@data$Biotype)) # 15239 pseudogenes
+length(grep("pseudogene", x = myCPMdata02@featureData@data$Biotype)) # 1634 pseudogenes
+length(grep("pseudogene", x = myCPMdata05@featureData@data$Biotype)) # 929 pseudogenes
+length(grep("pseudogene", x = myCPMdata1@featureData@data$Biotype)) # 595 pseudogenes
+length(grep("pseudogene", x = myWilcoxondata@featureData@data$Biotype)) # 14148 pseudogenes
 ```
 
 Method 2 (Wilcoxon test) barely does any filtering at all, so we’ll
@@ -645,7 +701,41 @@ save(rna.filt.counts, file = "data/cooked/RNA-Seq/RNA.filt.rda")
 ``` r
 load("data/cooked/RNA-Seq/RNA.filt.rda")
 
+barcodes <- get_IDs(rna.filt.counts)
+barcodes$condition <- as.factor(barcodes$condition)
+barcodes$condition <- relevel(barcodes$condition, ref = "normal")
+myfactors <- data.frame(barcodes$tss, barcodes$portion, barcodes$plate, barcodes$condition)
+
 myexpdata.filt <- NOISeq::readData(data = rna.filt.counts, factors = myfactors, length = mylength, gc = mygc, biotype = mybiotypes, chromosome = mychroms)
+```
+
+``` r
+mean_log_cpm <- aveLogCPM(rna.filt.counts)
+
+filter_threshold <- log2(0.5)
+
+ggplot() + aes(x=mean_log_cpm) +
+    geom_histogram(binwidth=0.2) +
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Filtered RNA-Seq counts") +
+    labs(x = "logCPM", y = "Frequency") + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=2.1, geom="label")
+```
+
+![](images/cookingRNASeq/histogram.logcpm.filtered.png)
+
+``` r
+ggplot() + aes(x=mean_log_cpm) +
+    geom_density() +
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Unfiltered RNA-Seq counts") +
+    xlim(-6.1, 13.5) + 
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=1.5, geom="label") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(x = "logCPM", y = "Density")
+
+summary(colSums(rna.filt.counts))
 ```
 
 # Exploring
@@ -729,19 +819,21 @@ explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "loadings")
 explo.plot(myexpPCA, factor = "barcodes.tss")
 ```
 
-![](images/cookingRNASeq/pca.tss.png)
-
-``` r
-explo.plot(myexpPCA, factor = "barcodes.portion")
-```
-
-![](images/cookingRNASeq/pca.portion.png)
+![](images/cookingRNASeq/pca.tss.filt.png)
 
 ``` r
 explo.plot(myexpPCA, factor = "barcodes.plate")
 ```
 
-![](images/cookingRNASeq/pca.plate.png)
+![](images/cookingRNASeq/pca.plate.filt.png)
+
+``` r
+par(mfrow = c(2, 2))
+explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "scores")
+explo.plot(myexpPCA, factor = "barcodes.condition", plottype = "loadings")
+explo.plot(myexpPCA, factor = "barcodes.tss")
+explo.plot(myexpPCA, factor = "barcodes.plate")
+```
 
 We can appreciate in these plots that **none of the factors (TSS,
 portion, plate) seem to be contributing towards batch effect** in our
@@ -808,14 +900,14 @@ gc.length.rna <- as.data.frame(gc.length.rna)
 
 rna.cqn.norm <- cqn(rna.filt.counts, lengths = gc.length.rna$length, x = gc.length.rna$gc, sizeFactors = sizeFactors.rna, verbose = TRUE)
 
-save(rna.cqn.norm, file = "reports/preprocessing/files/cookingRNASeq/RNA.cqn.norm.rda")
+save(rna.cqn.norm, file = "scripts/preprocessing/files/cookingRNASeq/RNA.cqn.norm.rda")
 
 rna.cqn.norm
 
 # Extract the offset, which will be input directly into DEseq2 to normalise the counts
 cqnOffset <- rna.cqn.norm$glm.offset
 cqnNormFactors <- exp(cqnOffset)
-save(cqnNormFactors, file = "reports/preprocessing/files/cookingRNASeq/RNA.cqn.normFactors.rda")
+save(cqnNormFactors, file = "scripts/preprocessing/files/cookingRNASeq/RNA.cqn.normFactors.rda")
 
 # Extract normalized data to check for bias on NOISeq
 rna.cqn.norm.expression <- rna.cqn.norm$y + rna.cqn.norm$offset
@@ -825,7 +917,7 @@ rna.cqn.norm.expression <- as.data.frame(rna.cqn.norm.expression)
 Did `cqn` normalization reduce our gene length and GC content biases?
 
 ``` r
-load("reports/preprocessing/files/cookingRNASeq/RNA.cqn.norm.rda")
+load("scripts/preprocessing/files/cookingRNASeq/RNA.cqn.norm.rda")
 rna.cqn.norm.expression <- rna.cqn.norm$y + rna.cqn.norm$offset
 rna.cqn.norm.expression <- as.data.frame(rna.cqn.norm.expression)
 
@@ -884,7 +976,7 @@ explo.plot(myexpPCA.norm, factor = "barcodes.condition", plottype = "loadings")
 ![](images/cookingRNASeq/pca.loadings.cqn.norm.png)
 
 ``` r
-boxplot(rna.cqn.norm.expression[, 1:50], outline = FALSE, las = 2)
+boxplot(rna.cqn.norm.expression[, 1:50], outline = FALSE, las = 2, names = substr(colnames(rna.cqn.norm.expression), 6, 12)[1:50], main = "cqn normalized RNA-Seq counts")
 ```
 
 ![](images/cookingRNASeq/boxplot.cqn.norm.png)
@@ -975,19 +1067,19 @@ rna.eda.norm.length.gc <- withinLaneNormalization(data, "length", which="full")
 rna.eda.norm.length.gc <- withinLaneNormalization(rna.eda.norm.length.gc, "gc", which="full")
 rna.eda.norm.length.gc <- betweenLaneNormalization(rna.eda.norm.length.gc, which="full")
 
-save(rna.eda.norm.gc, file = "reports/preprocessing/files/cookingRNASeq/RNA.eda.GC.norm.rda")
+save(rna.eda.norm.gc, file = "scripts/preprocessing/files/cookingRNASeq/RNA.eda.GC.norm.rda")
 
-save(rna.eda.norm.gc.length, file = "reports/preprocessing/files/cookingRNASeq/RNA.eda.GC.length.norm.rda")
+save(rna.eda.norm.gc.length, file = "scripts/preprocessing/files/cookingRNASeq/RNA.eda.GC.length.norm.rda")
 
-save(rna.eda.norm.length.gc, file = "reports/preprocessing/files/cookingRNASeq/RNA.eda.length.GC.norm.rda")
+save(rna.eda.norm.length.gc, file = "scripts/preprocessing/files/cookingRNASeq/RNA.eda.length.GC.norm.rda")
 ```
 
 Did `EDASeq` normalization reduce our gene length and GC content biases?
 
 ``` r
-load("reports/preprocessing/files/cookingRNASeq/RNA.eda.GC.norm.rda")
-load("reports/preprocessing/files/cookingRNASeq/RNA.eda.GC.length.norm.rda")
-load("reports/preprocessing/files/cookingRNASeq/RNA.eda.length.GC.norm.rda")
+load("scripts/preprocessing/files/cookingRNASeq/RNA.eda.GC.norm.rda")
+load("scripts/preprocessing/files/cookingRNASeq/RNA.eda.GC.length.norm.rda")
+load("scripts/preprocessing/files/cookingRNASeq/RNA.eda.length.GC.norm.rda")
 
 # Extract normalized counts to check for bias on NOISeq
 rna.eda.counts.gc <- rna.eda.norm.gc@assayData$normalizedCounts
@@ -1077,7 +1169,7 @@ explo.plot(myexpPCA.norm.eda.gc, factor = "barcodes.condition", plottype = "load
 ![](images/cookingRNASeq/pca.loadings.eda.gc.norm.png)
 
 ``` r
-boxplot(log10(rna.eda.counts.gc.length[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(rna.eda.counts.gc[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(rna.eda.counts.gc), 6, 12)[1:50], main = "EDASeq (GC) normalized RNA-Seq counts")
 ```
 
 ![](images/cookingRNASeq/boxplot.eda.gc.norm.png)
@@ -1097,7 +1189,7 @@ explo.plot(myexpPCA.norm.eda.gc.length, factor = "barcodes.condition", plottype 
 ![](images/cookingRNASeq/pca.loadings.eda.gc.length.norm.png)
 
 ``` r
-boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(rna.eda.counts.gc.length[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(rna.eda.counts.gc.length), 6, 12)[1:50], main = "EDASeq (GC -> length) normalized RNA-Seq counts")
 ```
 
 ![](images/cookingRNASeq/boxplot.eda.gc.length.norm.png)
@@ -1117,7 +1209,7 @@ explo.plot(myexpPCA.norm.eda.length.gc, factor = "barcodes.condition", plottype 
 ![](images/cookingRNASeq/pca.loadings.eda.length.gc.norm.png)
 
 ``` r
-boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2)
+boxplot(log10(rna.eda.counts.length.gc[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(rna.eda.counts.length.gc), 6, 12)[1:50], main = "EDASeq (length -> GC) normalized RNA-Seq counts")
 ```
 
 ![](images/cookingRNASeq/boxplot.eda.length.gc.norm.png)

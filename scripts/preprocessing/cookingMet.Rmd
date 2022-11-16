@@ -128,6 +128,11 @@ legend("topleft", bty = "n", legend = c("cancer" , "normal" ), pch = c(17, 16), 
 ![](images/cookingMet/pca.beta.values.png)
 
 
+```{r, eval=FALSE}
+boxplot(mval[, 1:50], outline = FALSE, las = 2, names = substr(colnames(mval), 6, 12)[1:50], main = "Methylation M-values")
+```
+
+
 We can also plot the density of beta-values.
 
 ```{r, eval = FALSE}

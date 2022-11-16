@@ -161,11 +161,11 @@ genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
-activated.genes.limma <- genes.ids[log.fold.change > 0.5 & q.value < 0.05]
-repressed.genes.limma <- genes.ids[log.fold.change < -0.5 & q.value < 0.05]
+activated.genes.limma <- genes.ids[log.fold.change > 1 & q.value < 0.05]
+repressed.genes.limma <- genes.ids[log.fold.change < -1 & q.value < 0.05]
 
-length(activated.genes.limma) # 64
-length(repressed.genes.limma) # 28
+length(activated.genes.limma) # 21
+length(repressed.genes.limma) # 5
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -176,9 +176,9 @@ points(x = log.fold.change[activated.genes.limma],
 points(x = log.fold.change[repressed.genes.limma],
        y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
-write.table(activated.genes.limma, file = "results/preprocessing/cookingProt/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(activated.genes.limma, file = "results/preprocessing/cookingProt/limma.up.1.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-write.table(repressed.genes.limma, file = "results/preprocessing/cookingProt/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(repressed.genes.limma, file = "results/preprocessing/cookingProt/limma.down.1.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
