@@ -10,4 +10,4 @@ Using [MD Anderson's current expanded antibody list](https://www.mdanderson.org/
 
 ## Analyzing differential expression
 
-Differential expression analysis was performed using `limma`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 0.5 or < -0.5, giving a total of [92 proteins](/results/preprocessing/cookingProt/prot.DEGs.txt) (a 25% of the filtered targets and a 19% of the raw peptide targets), 64 being upregulated in cancer samples when compared to normal samples and 28 being downregulated.
+Differential expression analysis was performed using `limma`. Differentially expressed genes (DEGs) were selected as those with a q.value/p.adj/FDR < 0.05 and a logFoldChange > 1 or < 1, giving a total of [26 proteins](/results/preprocessing/cookingProt/prot.DEGs.txt) (a 7% of the filtered targets and a 5.7% of the raw peptide targets), 21 being upregulated in cancer samples when compared to normal samples and 5 being downregulated.
