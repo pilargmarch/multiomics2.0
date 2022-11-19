@@ -87,16 +87,61 @@ As expected, some gene symbols map to several ENSEMBL IDs. We decided to map eve
 
 ```{r, eval = FALSE}
 miRNA2gene$ensembl_gene_id <- gene.conversion$ensembl_gene_id[match(miRNA2gene$genesymbol, gene.conversion$external_gene_name)]
+```
 
-write.table(miRNA2gene[, -2], file = "results/associations/miRNA-gene/all_miRWalk_miRNA_Targets.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+# Associating mature miRNAs to their precursor genes
+
+In order to visualize miRNA expression values in Paintomics pathways, we need to add "fake associations" between the mature miRNA and the precursor miRNA gene from which it originated.
+
+```{r, eval = FALSE}
+load(file = "data/cooked/miRNA-Seq/miRNA.filt.rda")
+library(miRBaseConverter)
+precursors <- miRNA_MatureToPrecursor(miRNANames = rownames(mirna.filt.counts))
+accessions <- miRNA_NameToAccession(miRNANames = precursors$Precursor, version = "v20")
+precursors$accession <- accessions$Accession[match(precursors$Precursor, accessions$miRNAName_v20)]
+
+library(biomaRt)
+mart = useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+length(unique(precursors$accession)) # 448 accessions to convert
+genes.miRNAs <- getBM(filters="mirbase_accession",
+                         attributes=c("mirbase_accession", "ensembl_gene_id"), 
+                         values=precursors$accession,
+                         mart=mart)
+
+missing.accessions <- setdiff(accessions$Accession, genes.miRNAs$mirbase_accession)
+length(missing.accessions) # 4 missing accessions
+
+genes.miRNAs <- genes.miRNAs[order(genes.miRNAs$mirbase_accession), ]
+rownames(genes.miRNAs) <- c(1:length(genes.miRNAs$ensembl_gene_id))
+
+duplicated.genes <- which(duplicated(genes.miRNAs$mirbase_accession))
+duplicated.genes <- duplicated.genes-1 # we keep the last one, as this is the main sequence as opposed to alternative sequences (haplotypes/patches)
+genes.miRNAs <- genes.miRNAs[-duplicated.genes, ]
+
+missing.accessions
+# [1] "MI0000542" "MI0003776" "MI0003778" "MI0008190"
+
+missing.accessions <- data.frame(c("MI0000542", "MI0003776", "MI0003778", "MI0008190"), c("ENSG00000208037", "ENSG00000211543", "ENSG00000221493", "ENSG00000211491"))
+colnames(missing.accessions) <- colnames(genes.miRNAs)
+genes.miRNAs <- rbind(genes.miRNAs, missing.accessions)
+
+precursors$ensembl_gene_id <- genes.miRNAs$ensembl_gene_id[match(precursors$accession, genes.miRNAs$mirbase_accession)]
+
+mirna2precursorgene <- data.frame(precursors$OriginalName, 0, precursors$ensembl_gene_id)
+names(mirna2precursorgene) <- names(miRNA2gene)
+
+miRNA2gene <- rbind(miRNA2gene, mirna2precursorgene)
+
+write.table(miRNA2gene[, -2], file = "results/associations/miRNA-gene/all_miRWalk_miRNA_Targets.tab", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
 
 As an approximation we'll choose relevant associations as those where a relevant miRNA appears.
 
 ```{r, eval = FALSE}
-miRNA.associations <- read.table(file = "results/associations/miRNA-gene/all_miRWalk_miRNA_Targets.txt", header = TRUE)
+miRNA.associations <- read.table(file = "results/associations/miRNA-gene/all_miRWalk_miRNA_Targets.tab", header = TRUE)
 miRNA.DEGs <- read.table(file = "results/preprocessing/cookingmiRNASeq/common.miRNA.DEGs.txt")
-relevant.miRNA.associations <- subset(miRNA.associations, mirnaid %in% miRNA.DEGs$V1) # 290 miRNA-gene associations are relevant per this criterion
-write.table(relevant.miRNA.associations, file = "results/associations/miRNA-gene/DEG_miRWalk_miRNA_Targets.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+relevant.miRNA.associations <- subset(miRNA.associations, mirnaid %in% miRNA.DEGs$V1) # 970 miRNA-gene associations are relevant per this criterion (of which 793 are miRNA-target and the rest are miRNA-precursor)
+
+write.table(relevant.miRNA.associations, file = "results/associations/miRNA-gene/DEG_miRWalk_miRNA_Targets.tab", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 ```
 

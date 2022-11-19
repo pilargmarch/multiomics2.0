@@ -275,7 +275,7 @@ GC.content.miRNA <- getBM(filters="mirbase_accession",
                          values=accessions$Accession,
                          mart=mart)
 
-missing.accessions <- setdiff( accessions$Accession, GC.content.miRNA$mirbase_accession)
+missing.accessions <- setdiff(accessions$Accession, GC.content.miRNA$mirbase_accession)
 length(missing.accessions) # 8 missing accessions
 ```
 
@@ -514,13 +514,13 @@ summary(res.deseq2)
 ```
 
 ```{r, eval = FALSE}
-out of 642 with nonzero total read count
-adjusted p-value < 0.05
-LFC > 0 (up)       : 302, 47%
-LFC < 0 (down)     : 218, 34%
-outliers [1]       : 0, 0%
-low counts [2]     : 0, 0%
-(mean count < 0)
+# out of 642 with nonzero total read count
+# adjusted p-value < 0.05
+# LFC > 0 (up)       : 302, 47%
+# LFC < 0 (down)     : 218, 34%
+# outliers [1]       : 0, 0%
+# low counts [2]     : 0, 0%
+# (mean count < 0)
 ```
 
 Let's paint a PCA plot using the normalized data inside `dds` to see if it improved sample separation.
@@ -778,9 +778,9 @@ q.value <- top.edger$FDR
 genes.ids <- rownames(mirna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
-activated.genes.edger <- genes.ids[log.fold.change > 1 & q.value < 0.05] # 158
+activated.genes.edger <- genes.ids[log.fold.change > 1 & q.value < 0.05] # 163
 activated.genes.edger <- activated.genes.edger[!is.na(activated.genes.edger)]
-repressed.genes.edger <- genes.ids[log.fold.change < - 1 & q.value < 0.05] # 103
+repressed.genes.edger <- genes.ids[log.fold.change < - 1 & q.value < 0.05] # 97
 repressed.genes.edger <- repressed.genes.edger[!is.na(repressed.genes.edger)]
 
 log.q.val <- -log10(q.value)

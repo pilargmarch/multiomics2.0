@@ -1,5 +1,6 @@
 hsa-let-7c-3p
 hsa-let-7c-5p
+hsa-let-7i-3p
 hsa-miR-100-5p
 hsa-miR-10b-3p
 hsa-miR-10b-5p
@@ -24,7 +25,6 @@ hsa-miR-154-5p
 hsa-miR-193a-5p
 hsa-miR-195-3p
 hsa-miR-195-5p
-hsa-miR-199b-5p
 hsa-miR-204-5p
 hsa-miR-205-5p
 hsa-miR-211-5p
@@ -85,7 +85,6 @@ hsa-miR-675-3p
 hsa-miR-676-3p
 hsa-miR-6820-3p
 hsa-miR-6892-5p
-hsa-miR-758-5p
 hsa-miR-891a-5p
 hsa-miR-99a-3p
 hsa-miR-99a-5p

@@ -91,7 +91,7 @@ Let's convert beta-values to M-values.
 
 ```{r, eval = FALSE}
 bval <- met.beta.values
-saveRDS(bval, file = "data/cooked/met/bval.RDS", compress = FALSE)
+save(bval, file = "data/cooked/met/bval.rda")
 
 max(bval)
 # 0.99716
@@ -100,11 +100,11 @@ max(bval)
 # converting beta values to m_values
 # m = log2(beta/1-beta)
 mval <- t(apply(met.beta.values, 1, function(x) log2(x/(1-x))))
-saveRDS(mval, file = "data/cooked/met/mval.RDS", compress = FALSE)
+save(mval, file = "data/cooked/met/mval.rda")
 
 # to load
-mval <- readRDS("data/cooked/met/mval.RDS")
-bval <- readRDS("data/cooked/met/bval.RDS")
+load("data/cooked/met/mval.rda")
+load("data/cooked/met/bval.rda")
 ```
 
 # Exploring
