@@ -20,10 +20,10 @@ RNA-Seq, miRNA-Seq, methylation and proteomics data used in this project, both a
 - [cookingProt.md](scripts/preprocessing/cookingProt.md)
 
 ### 👫 [Associations](scripts/associations/)
-- [From transcription factors to genes](scripts/associations/TF-gene/TF2gene.md)
-- [From miRNAs to genes](scripts/associations/miRNA-gene/miRNA2gene.md)
-- [From methylation sites to genes](scripts/associations/met-gene/met2gene.md)
-- [From proteins to genes](scripts/associations/protein-gene/protein2gene.md)
+- [TF2gene.md](scripts/associations/TF-gene/TF2gene.md)
+- [miRNA2gene.md](scripts/associations/miRNA-gene/miRNA2gene.md)
+- [met2gene.md](scripts/associations/met-gene/met2gene.md)
+- [protein2gene.md](scripts/associations/protein-gene/protein2gene.md)
 
 ### 📈 [Integration](scripts/integration/)
 - [PaintOmics 4](scripts/integration/paintomics)
