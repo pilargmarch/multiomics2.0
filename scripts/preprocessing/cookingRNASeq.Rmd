@@ -42,6 +42,15 @@ table(rna.sample.info$vital_status)
 table(rna.sample.info$ajcc_pathologic_stage)
 table(rna.sample.info$days_to_death)
 ```
+```{r, eval = FALSE}
+load("data/cooked/RNA-Seq/RNA.filt.rda")
+rna.sample.info <- rna.sample.info[intersect(rownames(rna.sample.info), colnames(rna.filt.counts)), ] # delete duplicated samples from the clinical information
+# table(rna.sample.info$paper_BRCA_Subtype_PAM50)
+#  Basal   Her2   LumA   LumB Normal 
+#    128     46    416    139     34 
+sum(is.na(rna.sample.info$paper_BRCA_Subtype_PAM50)) # 85 NA
+```
+
 
 One question we might ask ourselves is which was the tissue type that was measured: primary tumor or solid tissue.
 
@@ -1212,13 +1221,13 @@ summary(res.deseq2)
 ```
 
 ```{r, eval = FALSE}
-out of 19318 with nonzero total read count
-adjusted p-value < 0.05
-LFC > 0 (up)       : 10328, 53%
-LFC < 0 (down)     : 5224, 27%
-outliers [1]       : 0, 0%
-low counts [2]     : 0, 0%
-(mean count < 4)
+# out of 19318 with nonzero total read count
+# adjusted p-value < 0.05
+# LFC > 0 (up)       : 10328, 53%
+# LFC < 0 (down)     : 5224, 27%
+# outliers [1]       : 0, 0%
+# low counts [2]     : 0, 0%
+# (mean count < 4)
 ```
 
 We'll select as significant those genes with a p.adj \< 0.05 and a lFC \> 2 or lFC \< -2. We get a total of 1203 upregulated DEGs (a 6% of the filtered genes) in cancer samples, compared to normal ones; and 635 downregulated DEGs (a 3.3% of the filtered genes), from a total of 19,318 filtered genes (originally 60,660 genes in our raw data).

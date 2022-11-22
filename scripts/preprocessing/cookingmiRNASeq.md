@@ -116,7 +116,6 @@ for(i in 2:length(mergeFiles)){
   mirna.raw.counts =join(mirna.raw.counts, as.data.frame(import.list[i]), by= "miRNA", type="left")
 }
 
-
 mirna.raw.counts[is.na(mirna.raw.counts)] = 0
 
 barcodes <- colnames(mirna.raw.counts)
@@ -158,7 +157,7 @@ mirna.raw.counts <- mirna.raw.counts[, -1]
 mirna.raw.counts <- as.data.frame(sapply(mirna.raw.counts, as.numeric))
 rownames(mirna.raw.counts) <- mirna.names
 
-boxplot(mirna.raw.counts[, 1:50] + 1, log = "y", outline = FALSE, las = 2, names = substr(colnames(mirna.raw.counts), 6, 12)[1:50])
+boxplot(mirna.raw.counts[, 1:50] + 1, log = "y", outline = FALSE, las = 2, names = substr(colnames(mirna.raw.counts), 6, 12)[1:50], main = "Unfiltered miRNA-Seq counts")
 ```
 
 ![](images/cookingmiRNASeq/boxplot.raw.png)
@@ -195,26 +194,31 @@ filter_threshold <- log2(0.5)
 
 ggplot() + aes(x=mean_log_cpm) +
     geom_histogram(binwidth=0.2) +
-    geom_vline(xintercept=filter_threshold) +
-    ggtitle("Histogram of logCPM before filtering")
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Unfiltered miRNA-Seq counts") +
+    labs(x = "logCPM", y = "Frequency") + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=2.1, geom="label")
 ```
 
-![](images/cookingmiRNASeq/histogram.logCPM.png)
+![](images/cookingmiRNASeq/histogram.logCPM.raw.png)
 
 ``` r
 ggplot() + aes(x=mean_log_cpm) +
     geom_density() +
-    geom_vline(xintercept=filter_threshold) +
-    ggtitle("Density plot of logCPM before filtering") +
-    xlim(-6.1, 13.5)
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Unfiltered miRNA-Seq counts") +
+    xlim(-2, 13.5) + 
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=1.5, geom="label") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(x = "logCPM", y = "Density")
 ```
 
-![](images/cookingmiRNASeq/density.logCPM.png)
+![](images/cookingmiRNASeq/density.logCPM.raw.png)
 
 So let’s try CPM filtering with a `CPM threshold = 0.2, 0.5 and 1` and a
-`cv.cutoff = 500`, so that we remove those features with low expression
-(but not with low variability). We will also apply Wilcoxon test
-filtering and compare the results.
+`cv.cutoff = 500`, so that we remove those features with low expression.
+We will also apply Wilcoxon test filtering and compare the results.
 
 ``` r
 myfiltCPM01 <- filtered.data(mirna.raw.counts, factor = myfactors$barcodes.condition, norm = FALSE, depth = NULL, method = 1, cv.cutoff = 500, cpm = 0.1, p.adj = "fdr") # 988 features are to be kept for differential expression analysis with filtering method 1
@@ -229,33 +233,31 @@ myfiltWilcoxon <- filtered.data(mirna.raw.counts, factor = myfactors$barcodes.co
 ```
 
 ``` r
-boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM02), 6, 12)[1:50])
+boxplot(log10(myfiltCPM02[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM02), 6, 12)[1:50], main = "Filtered miRNA-Seq counts with CPM > 0.2")
 ```
 
 ![](images/cookingmiRNASeq/boxplot.filt.CPM.02.png)
 
 ``` r
-boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM05), 6, 12)[1:50])
+boxplot(log10(myfiltCPM05[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM05), 6, 12)[1:50], main = "Filtered miRNA-Seq counts with CPM > 0.5")
 ```
 
 ![](images/cookingmiRNASeq/boxplot.filt.CPM.05.png)
 
 ``` r
-boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM1), 6, 12)[1:50])
+boxplot(log10(myfiltCPM1[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltCPM1), 6, 12)[1:50], main = "Filtered miRNA-Seq counts with CPM > 1")
 ```
 
 ![](images/cookingmiRNASeq/boxplot.filt.CPM.1.png)
 
 ``` r
-boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltWilcoxon), 6, 12)[1:50])
+boxplot(log10(myfiltWilcoxon[, 1:50])+1, outline = FALSE, las = 2, names = substr(colnames(myfiltWilcoxon), 6, 12)[1:50], main = "Filtered miRNA-Seq counts with Wilcoxon test")
 ```
 
 ![](images/cookingmiRNASeq/boxplot.filt.Wilcoxon.png)
 
 We’ll choose method 1 with a CPM threshold of 0.5, which leaves us with
 29% of the total miRNAs.
-
-# Exploring
 
 ``` r
 mirna.filt.counts <- myfiltCPM05
@@ -264,6 +266,37 @@ rm(myfiltCPM05)
 
 save(mirna.filt.counts, file = "data/cooked/miRNA-Seq/miRNA.filt.rda")
 ```
+
+``` r
+mean_log_cpm <- aveLogCPM(mirna.raw.counts)
+
+filter_threshold <- log2(0.5)
+
+ggplot() + aes(x=mean_log_cpm) +
+    geom_histogram(binwidth=0.2) +
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Filtered miRNA-Seq counts") +
+    labs(x = "logCPM", y = "Frequency") + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=2.1, geom="label")
+```
+
+![](images/cookingmiRNASeq/histogram.logCPM.filt.png)
+
+``` r
+ggplot() + aes(x=mean_log_cpm) +
+    geom_density() +
+    geom_vline(xintercept=filter_threshold, linetype = "dashed", size = 0.7) +
+    ggtitle("Filtered miRNA-Seq counts") +
+    xlim(-2, 13.5) + 
+    annotate(x=0.95, y=+Inf, label="CPM = 0.5", vjust=1.5, geom="label") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    labs(x = "logCPM", y = "Density")
+```
+
+![](images/cookingmiRNASeq/density.logCPM.filt.png)
+
+# Exploring
 
 And we’ll need GC content information. First, we need to convert mature
 miRNAs to their precursors and then to accession (e.g. MI0003772), which
@@ -283,7 +316,7 @@ GC.content.miRNA <- getBM(filters="mirbase_accession",
                          values=accessions$Accession,
                          mart=mart)
 
-missing.accessions <- setdiff( accessions$Accession, GC.content.miRNA$mirbase_accession)
+missing.accessions <- setdiff(accessions$Accession, GC.content.miRNA$mirbase_accession)
 length(missing.accessions) # 8 missing accessions
 ```
 
@@ -411,7 +444,7 @@ sizeFactors.mirna <- colSums(mirna.filt.counts)
 
 mirna.cqn.norm <- cqn(mirna.filt.counts, lengthMethod = "fixed", lengths = rep(100, 642), x = mygc, sizeFactors = sizeFactors.mirna, verbose = TRUE)
 
-save(mirna.cqn.norm, file = "reports/preprocessing/files/cookingmiRNASeq/miRNA.cqn.norm.rda")
+save(mirna.cqn.norm, file = "scripts/preprocessing/files/cookingmiRNASeq/miRNA.cqn.norm.rda")
 
 # Extract normalized data to check for bias on NOISeq
 mirna.cqn.norm.expression <- mirna.cqn.norm$y + mirna.cqn.norm$offset
@@ -432,9 +465,9 @@ data <- newSeqExpressionSet(counts=as.matrix(mirna.filt.counts), featureData=fea
 dataWithin <- withinLaneNormalization(data, "gc", which="full")
 mirna.eda.norm <- betweenLaneNormalization(dataWithin, which="full")
 
-save(mirna.eda.norm, file = "reports/preprocessing/files/cookingmiRNASeq/miRNA.eda.norm.rda")
+save(mirna.eda.norm, file = "scripts/preprocessing/files/cookingmiRNASeq/miRNA.eda.norm.rda")
 
-load("reports/preprocessing/files/cookingmiRNASeq/miRNA.eda.norm.rda")
+load("scripts/preprocessing/files/cookingmiRNASeq/miRNA.eda.norm.rda")
 ```
 
 “Normalization factors should be on the scale of the counts, like size
@@ -451,7 +484,7 @@ normFactors <- betweenLaneNormalization(normFactors,
                                         which="full", offset=TRUE)
 
 normFactors <- exp(-1 * normFactors@assayData$offset)
-save(normFactors, file = "reports/preprocessing/files/cookingmiRNASeq/miRNA.normFactors.rda")
+save(normFactors, file = "scripts/preprocessing/files/cookingmiRNASeq/miRNA.normFactors.rda")
 ```
 
 ``` r
@@ -517,6 +550,7 @@ when calculating normalization factors.
 ``` r
 library(DESeq2)
 library(TCGAbiolinks)
+library(ggplot2)
 
 load("data/cooked/miRNA-Seq/miRNA.filt.rda")
 
@@ -539,13 +573,13 @@ summary(res.deseq2)
 ```
 
 ``` r
-out of 642 with nonzero total read count
-adjusted p-value < 0.05
-LFC > 0 (up)       : 302, 47%
-LFC < 0 (down)     : 218, 34%
-outliers [1]       : 0, 0%
-low counts [2]     : 0, 0%
-(mean count < 0)
+# out of 642 with nonzero total read count
+# adjusted p-value < 0.05
+# LFC > 0 (up)       : 302, 47%
+# LFC < 0 (down)     : 218, 34%
+# outliers [1]       : 0, 0%
+# low counts [2]     : 0, 0%
+# (mean count < 0)
 ```
 
 Let’s paint a PCA plot using the normalized data inside `dds` to see if
@@ -553,10 +587,22 @@ it improved sample separation.
 
 ``` r
 vsd <- varianceStabilizingTransformation(dds, blind=FALSE)
-plotPCA(vsd)
+# plotPCA(vsd)
+
+pc = prcomp(t(assay(vsd)), scale = FALSE)
+bcodes <- substr(rownames(pc$x), 1, 15)
+tumor <- substr(bcodes, 14, 15) == "01"
+loads <- round(pc$sdev^2/sum(pc$sdev)*100, 1)
+xlab <- c(paste("PC 1", loads[1], "%"))
+ylab <- c(paste("PC 2", loads[2], "%"))
+plot(pc$x[ , 1], pc$x[ , 2], xlab = xlab, ylab = ylab, type = "n",
+main = "Scores", cex.axis = 0.75, cex.lab = 0.75, cex.main = 0.75)
+points(pc$x[tumor, 1] , pc$x[tumor, 2], col = "red", pch = 17, cex = 1.4)
+points(pc$x[!tumor, 1] , pc$x[!tumor, 2], col = "darkolivegreen4", pch = 16, cex = 1.4)
+legend("topleft", bty = "n", legend = c("cancer" , "normal" ), pch = c(17, 16), col = c("red", "darkolivegreen4"), cex = 0.75)
 ```
 
-![](images/cookingmiRNASeq/pca.deseq2.png)
+![](images/cookingmiRNASeq/pca.deseq2.custom.png)
 
 We had to decrease our lFC threshold from 2 to 1, as otherwise we ended
 up getting a ridiculous number of DEGs (9 in total, after intersecting
@@ -619,6 +665,22 @@ dge <- calcNormFactors(dge) # TMM normalization from edgeR
 logCPM <- cpm(dge, log=TRUE, prior.count=3) # logCPM conversion from edgeR
 # average count to be added to each observation to avoid taking log of zero
 
+pc = prcomp(t(logCPM), scale = FALSE)
+bcodes <- substr(rownames(pc$x), 1, 15)
+tumor <- substr(bcodes, 14, 15) == "01"
+loads <- round(pc$sdev^2/sum(pc$sdev)*100, 1)
+xlab <- c(paste("PC 1", loads[1], "%"))
+ylab <- c(paste("PC 2", loads[2], "%"))
+plot(pc$x[ , 1], pc$x[ , 2], xlab = xlab, ylab = ylab, type = "n",
+main = "Scores", cex.axis = 0.75, cex.lab = 0.75, cex.main = 0.75)
+points(pc$x[tumor, 1] , pc$x[tumor, 2], col = "red", pch = 17, cex = 1.4)
+points(pc$x[!tumor, 1] , pc$x[!tumor, 2], col = "darkolivegreen4", pch = 16, cex = 1.4)
+legend("topleft", bty = "n", legend = c("cancer" , "normal" ), pch = c(17, 16), col = c("red", "darkolivegreen4"), cex = 0.75)
+```
+
+![](images/cookingmiRNASeq/pca.limma.png)
+
+``` r
 design <- model.matrix(~ barcodes$condition)
 
 fit1 <- lmFit(logCPM, design)
@@ -670,6 +732,23 @@ the case here.
 
 ``` r
 v <- voom(mirna.filt.counts, design, plot=TRUE)
+
+pc = prcomp(t(v$E), scale = FALSE)
+bcodes <- substr(rownames(pc$x), 1, 15)
+tumor <- substr(bcodes, 14, 15) == "01"
+loads <- round(pc$sdev^2/sum(pc$sdev)*100, 1)
+xlab <- c(paste("PC 1", loads[1], "%"))
+ylab <- c(paste("PC 2", loads[2], "%"))
+plot(pc$x[ , 1], pc$x[ , 2], xlab = xlab, ylab = ylab, type = "n",
+main = "Scores", cex.axis = 0.75, cex.lab = 0.75, cex.main = 0.75)
+points(pc$x[tumor, 1] , pc$x[tumor, 2], col = "red", pch = 17, cex = 1.4)
+points(pc$x[!tumor, 1] , pc$x[!tumor, 2], col = "darkolivegreen4", pch = 16, cex = 1.4)
+legend("topleft", bty = "n", legend = c("cancer" , "normal" ), pch = c(17, 16), col = c("red", "darkolivegreen4"), cex = 0.75)
+```
+
+![](images/cookingmiRNASeq/pca.limma.voom.png)
+
+``` r
 fit <- lmFit(v, design)
 fit2 <- eBayes(fit)
 top.limma.voom <- topTable(fit2, coef=ncol(design), number = Inf)
@@ -718,6 +797,8 @@ write.table(topOrderedDF, file = "results/preprocessing/cookingmiRNASeq/limma.vo
 library(edgeR)
 
 y <- DGEList(counts = mirna.filt.counts, lib.size = colSums(mirna.filt.counts), group = barcodes$condition, genes = rownames(mirna.filt.counts))
+
+y <- calcNormFactors(y)
 ```
 
 ``` r
@@ -725,10 +806,27 @@ design <- model.matrix(~ barcodes$condition)
 
 y <- estimateCommonDisp(y, design = design)
 y <- estimateTagwiseDisp(y, design = design)
+
 plotBCV(y)
 ```
 
 ![](images/cookingmiRNASeq/plotBCV.edger.png)
+
+``` r
+pc = prcomp(t(tmm_log <- edgeR::cpm(y, log = T, prior.count = 1)), scale = FALSE)
+bcodes <- substr(rownames(pc$x), 1, 15)
+tumor <- substr(bcodes, 14, 15) == "01"
+loads <- round(pc$sdev^2/sum(pc$sdev)*100, 1)
+xlab <- c(paste("PC 1", loads[1], "%"))
+ylab <- c(paste("PC 2", loads[2], "%"))
+plot(pc$x[ , 1], pc$x[ , 2], xlab = xlab, ylab = ylab, type = "n",
+main = "Scores", cex.axis = 0.75, cex.lab = 0.75, cex.main = 0.75)
+points(pc$x[tumor, 1] , pc$x[tumor, 2], col = "red", pch = 17, cex = 1.4)
+points(pc$x[!tumor, 1] , pc$x[!tumor, 2], col = "darkolivegreen4", pch = 16, cex = 1.4)
+legend("topleft", bty = "n", legend = c("cancer" , "normal" ), pch = c(17, 16), col = c("red", "darkolivegreen4"), cex = 0.75)
+```
+
+![](images/cookingmiRNASeq/pca.edger.png)
 
 This time it’s also better to estimate dispersions tagwise instead of
 using a common one for all genes.
@@ -753,9 +851,9 @@ q.value <- top.edger$FDR
 genes.ids <- rownames(mirna.filt.counts)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
-activated.genes.edger <- genes.ids[log.fold.change > 1 & q.value < 0.05] # 158
+activated.genes.edger <- genes.ids[log.fold.change > 1 & q.value < 0.05] # 163
 activated.genes.edger <- activated.genes.edger[!is.na(activated.genes.edger)]
-repressed.genes.edger <- genes.ids[log.fold.change < - 1 & q.value < 0.05] # 103
+repressed.genes.edger <- genes.ids[log.fold.change < - 1 & q.value < 0.05] # 97
 repressed.genes.edger <- repressed.genes.edger[!is.na(repressed.genes.edger)]
 
 log.q.val <- -log10(q.value)

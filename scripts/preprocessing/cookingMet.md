@@ -10,8 +10,6 @@ Pilar González Marchante
     id="toc-analyzing-differential-expression">Analyzing differential
     expression</a>
     -   <a href="#limma" id="toc-limma">limma</a>
--   <a href="#gene-ontology-testing" id="toc-gene-ontology-testing">Gene
-    ontology testing</a>
 
 # Loading
 
@@ -154,7 +152,7 @@ Let’s convert beta-values to M-values.
 
 ``` r
 bval <- met.beta.values
-saveRDS(bval, file = "data/cooked/met/bval.RDS", compress = FALSE)
+save(bval, file = "data/cooked/met/bval.rda")
 
 max(bval)
 # 0.99716
@@ -163,51 +161,53 @@ max(bval)
 # converting beta values to m_values
 # m = log2(beta/1-beta)
 mval <- t(apply(met.beta.values, 1, function(x) log2(x/(1-x))))
-saveRDS(mval, file = "data/cooked/met/mval.RDS", compress = FALSE)
+save(mval, file = "data/cooked/met/mval.rda")
 
 # to load
-mval <- readRDS("data/cooked/met/mval.RDS")
-bval <- readRDS("data/cooked/met/bval.RDS")
+load("data/cooked/met/mval.rda")
+load("data/cooked/met/bval.rda")
 ```
 
 # Exploring
 
-We can plot a PCA to see if there’s good separation between the groups,
-picking 100,000 random CpG sites from the 364,019 filtered ones we have.
+We can plot a PCA to see if there’s good separation between the groups.
 
 ``` r
-pc = prcomp(t(bval[floor(runif(100000, min=1, max=364019)),]), scale = FALSE)
+pc = prcomp(t(bval), scale = FALSE)
 bcodes <- substr(rownames(pc$x), 1, 15)
 tumor <- substr(bcodes, 14, 15) == "01"
 loads <- round(pc$sdev^2/sum(pc$sdev)*100, 1)
-xlab <- c(paste("PC1", loads[1], "%"))
-ylab <- c(paste("PC2", loads[2], "%"))
+xlab <- c(paste("PC 1", loads[1], "%"))
+ylab <- c(paste("PC 2", loads[2], "%"))
 plot(pc$x[ , 1], pc$x[ , 2], xlab = xlab, ylab = ylab, type = "n",
-main = "PC1 vs . PC2 ", cex.axis = 1.5 , cex.lab = 1.3 , cex.main = 1.5)
-points(pc$x[tumor, 1] , pc$x[tumor, 2], col = "red", pch = 16)
-points(pc$x[!tumor, 1] , pc$x[!tumor, 2], col = "blue", pch = 16)
-legend("topright", legend = c("Tumor" , "Normal" ), pch = 16, col = c("red", "blue"))
+main = "Scores", cex.axis = 0.75, cex.lab = 0.75, cex.main = 0.75)
+points(pc$x[tumor, 1] , pc$x[tumor, 2], col = "red", pch = 17, cex = 1.4)
+points(pc$x[!tumor, 1] , pc$x[!tumor, 2], col = "darkolivegreen4", pch = 16, cex = 1.4)
+legend("topleft", bty = "n", legend = c("cancer" , "normal" ), pch = c(17, 16), col = c("red", "darkolivegreen4"), cex = 0.75)
 ```
 
 ![](images/cookingMet/pca.beta.values.png)
 
-We can also plot the density of beta-values for 10,000 random samples.
+``` r
+boxplot(mval[, 1:50], outline = FALSE, las = 2, names = substr(colnames(mval), 6, 12)[1:50], main = "Methylation M-values")
+```
+
+We can also plot the density of beta-values.
 
 ``` r
-rand_smp = sample(rownames(bval), 10000, replace = F)
 bcodes = substr(colnames(bval), 1, 15)
 tumor <- substr(bcodes, 14, 15) == "01"
 
-plot(density(bval[rand_smp, 1]), type = "n", ylim = c(0,3), main = "Density of B-values for tumor and normal samples", cex.axis = 1.5, xlab = "Beta-value", ylab = "Density", cex.main = 1.5)
+plot(density(bval[, 1]), type = "n", ylim = c(0,5), main = "Density of B values for tumor and normal samples", cex.axis = 1.5, xlab = "Beta-value", ylab = "Density", cex.main = 1.5)
 for (i in 1:length(bcodes)) {
   if (tumor[i] == T) {
-    points(density(bval[rand_smp, i]), col = "red", type = "l")
+    points(density(bval[, i]), col = "red", type = "l")
   }
   else {
-    points(density(bval[rand_smp, i]), col = "blue", type = "l")
+    points(density(bval[, i]), col = "darkolivegreen4", type = "l")
   }
 }
-legend("topright", legend = c("Tumor", "Normal"), col = c("red", "blue"), lty = 1)
+legend("topright", legend = c("cancer", "normal"), col = c("red", "darkolivegreen4"), lty = 1)
 ```
 
 ![](images/cookingMet/density.beta.values.png)
@@ -311,100 +311,3 @@ sapply(rownames(topOrderedDF)[1:4], function(cpg){
 ```
 
 ![](images/cookingMet/top.DM.png)
-
-# Gene ontology testing
-
-Once you have performed a differential methylation analysis, there may
-be a very long list of significant CpG sites to interpret. One question
-a researcher may have is, “which gene pathways are over-represented for
-differentially methylated CpGs?” In some cases it is relatively
-straightforward to link the top differentially methylated CpGs to genes
-that make biological sense in terms of the cell types or samples being
-studied, but there may be many thousands of CpGs significantly
-differentially methylated. In order to gain an understanding of the
-biological processes that the differentially methylated CpGs may be
-involved in, we can perform gene ontology or KEGG pathway analysis using
-the `gometh` function in the `missMethyl` package.
-
-The `gometh` function takes as input a character vector of the names
-(e.g. cg20832020) of the significant CpG sites, and optionally, a
-character vector of all CpGs tested. This is recommended particularly if
-extensive filtering of the CpGs has been performed prior to analysis.
-For gene ontology testing (default), the user can specify
-collection=“GO” for KEGG testing collection=“KEGG”. In the DMPs table,
-the Name column corresponds to the CpG name. We will select all CpG
-sites that have adjusted p-value of less than 0.05.
-
-``` r
-DMPs <- read.table(file = "results/preprocessing/cookingMet/met.DEGs.txt")
-DMPs <- as.vector(DMPs$V1)
-
-# Get all the CpG sites used in the analysis to form the background
-all.CpG.sites <- rownames(topOrderedDF)
-```
-
-The `gometh` function takes into account the varying numbers of CpGs
-associated with each gene on the Illumina methylation arrays. For the
-450k array, the numbers of CpGs mapping to genes can vary from as few as
-1 to as many as 1200. The genes that have more CpGs associated with them
-will have a higher probability of being identified as differentially
-methylated compared to genes with fewer CpGs. We can look at this bias
-in the data by specifying plot=TRUE in the call to `gometh`.
-
-The `gst` object is a data.frame with each row corresponding to the GO
-category being tested. The top 20 gene ontology categories can be
-displayed using the `topGO` function.
-
-This function takes a character vector of significant CpG sites, maps
-the CpG sites to Entrez Gene IDs, and tests for GO term or KEGG pathway
-enrichment using a Wallenius’ non central hypergeometric test, taking
-into account the number of CpG sites per gene on the 450K/EPIC array and
-multi-gene annotated CpGs. Geeleher et al. (2013) showed that a severe
-bias exists when performing gene set analysis for genome-wide
-methylation data that occurs due to the differing numbers of CpG sites
-profiled for each gene. gometh is based on the goseq method (Young et
-al., 2010), and is a modification of the goana function in the limma
-package.
-
-The testing now also takes into account that some CpGs are annotated to
-multiple genes. For a small number of gene families, this previously
-caused their associated GO categories/gene sets to be erroneously
-overrepresented and thus highly significant. If fract.counts=FALSE then
-CpGs are allowed to map to multiple genes (this is NOT recommended).
-
-A new feature of gometh and gsameth is the ability to restrict the input
-CpGs by genomic feature with the argument genomic.features. The possible
-options include “ALL”, “TSS200”, “TSS1500”, “Body”, “1stExon”, “3’UTR”,
-“5’UTR” and “ExonBnd”, and the user may specify any combination. Please
-not that “ExonBnd” is not an annotated feature on 450K arrays. For
-example if you are interested in the promoter region only, you could
-specify genomic.features = c(“TSS1500”,“TSS200”,“1stExon”). The default
-behaviour is to test all input CpGs sig.cpg even if the user specifies
-“ALL” and one or more other features.
-
-``` r
-library(missMethyl)
-library(limma)
-
-par(mfrow=c(1,1))
-gst <- gometh(sig.cpg=DMPs, all.cpg=all.CpG.sites, genomic.features = c("TSS1500", "TSS200", "5'UTR", "1stExon"), plot.bias=TRUE)
-
-# Top 10 GO categories
-head(gst[order(gst$FDR), ], n = 10)
-
-           ONTOLOGY                                                                  TERM    N   DE         P.DE          FDR
-GO:0004930       MF                                   G protein-coupled receptor activity  732  150 3.046787e-25 3.469072e-21
-GO:0032501       BP                                      multicellular organismal process 7162 1043 1.639757e-25 3.469072e-21
-GO:0003700       MF                             DNA-binding transcription factor activity 1360  284 1.673472e-21 1.270277e-17
-GO:0000981       MF DNA-binding transcription factor activity, RNA polymerase II-specific 1316  277 4.131833e-21 1.678523e-17
-GO:0004888       MF                             transmembrane signaling receptor activity 1151  212 3.282019e-21 1.678523e-17
-GO:0005887       CC                                 integral component of plasma membrane 1618  309 4.422597e-21 1.678523e-17
-GO:0007275       BP                                    multicellular organism development 4701  762 8.898036e-21 2.894658e-17
-GO:0048731       BP                                                    system development 4250  704 1.484574e-20 4.225840e-17
-GO:0050877       BP                                                nervous system process 1367  257 4.025425e-20 1.018522e-16
-GO:0007399       BP                                            nervous system development 2371  458 5.131559e-20 1.168559e-16
-```
-
-![](images/cookingMet/bias.DEGs.png)
-
-![](images/cookingMet/gene.diagram.jpg)

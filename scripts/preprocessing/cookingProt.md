@@ -54,14 +54,14 @@ the “standard curve” (supercurve) of the slide (antibody).
 
 ``` r
 prot <- prot[-c(1,2,3,4,5)]
-first.30.samples <- prot[, 1:30]
-boxplot(first.30.samples)
+
+boxplot(prot[, 1:50], outline = FALSE, las = 2, names = substr(colnames(prot), 6, 12)[1:50], main = "Normalized protein expression")
 ```
 
 ![](images/cookingProt/boxplot.png)
 
 It seems our data is already normalized, which makes sense since it is
-stated that the data was median-centred and log2-transformed.
+stated that the data was median-centered and log2-transformed.
 
 How many missing values do we have?
 
@@ -120,7 +120,7 @@ Entrez IDs, we kept the first one.
 
 ``` r
 library(dplyr)
-antibodies <- read.table("reports/associations/protein-gene/RPPA_Antibodies.txt", sep = "\t", header = TRUE, row.names = 1)
+antibodies <- read.table("scripts/associations/protein-gene/RPPA_Antibodies.txt", sep = "\t", header = TRUE, row.names = 1)
 rownames(antibodies)<-gsub("-","",as.character(rownames(antibodies)))
 rownames(antibodies)<-gsub("_","",as.character(rownames(antibodies)))
 rownames(antibodies)<-toupper(rownames(antibodies))
@@ -137,9 +137,15 @@ prot <- prot[!(row.names(prot) %in% missing.peptides), ]
 prot$Entrez <- antibodies[existing.peptides, ]$NCBI_Entrez_Gene_ID
 
 write.table(prot, file = "reports/associations/protein-gene/prot.txt", sep = "\t", quote = FALSE)
+```
 
+``` r
 # after deleting duplicated Entrez IDs and keeping the most reliable peptide for it
 load("data/cooked/prot/prot.filt.rda")
+```
+
+``` r
+boxplot(prot[, 1:50], outline = FALSE, las = 2, names = substr(colnames(prot), 6, 12)[1:50], main = "Normalized protein expression")
 ```
 
 In the end, we have a matrix with normalized protein expression values
@@ -150,7 +156,7 @@ for 369 proteins and 625 samples. We can now explore our data with
 library(NOISeq)
 
 groups <- substr(colnames(prot), 13, 15)
-groups <- gsub("-01", "tumor", groups)
+groups <- gsub("-01", "cancer", groups)
 groups <- gsub("-11", "normal", groups)
 
 groups <- as.data.frame(groups)
@@ -171,6 +177,8 @@ explo.plot(myPCA, factor = "groups", plottype = "loadings")
 Since our data is already normalized, we need to use `limma`.
 
 ``` r
+load("data/cooked/prot/prot.filt.rda")
+
 library(limma)
 
 groups <- substr(colnames(prot), 13, 15)
@@ -191,11 +199,11 @@ genes.ids <- rownames(top.limma)
 names(log.fold.change) <- genes.ids
 names(q.value) <- genes.ids
 
-activated.genes.limma <- genes.ids[log.fold.change > 0.5 & q.value < 0.05]
-repressed.genes.limma <- genes.ids[log.fold.change < -0.5 & q.value < 0.05]
+activated.genes.limma <- genes.ids[log.fold.change > 1 & q.value < 0.05]
+repressed.genes.limma <- genes.ids[log.fold.change < -1 & q.value < 0.05]
 
-length(activated.genes.limma) # 64
-length(repressed.genes.limma) # 28
+length(activated.genes.limma) # 21
+length(repressed.genes.limma) # 5
 
 log.q.val <- -log10(q.value)
 plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
@@ -206,14 +214,14 @@ points(x = log.fold.change[activated.genes.limma],
 points(x = log.fold.change[repressed.genes.limma],
        y = log.q.val[repressed.genes.limma],col="blue",cex=0.8,pch=19)
 
-write.table(activated.genes.limma, file = "results/preprocessing/cookingProt/limma.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(activated.genes.limma, file = "results/preprocessing/cookingProt/limma.up.1.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-write.table(repressed.genes.limma, file = "results/preprocessing/cookingProt/limma.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(repressed.genes.limma, file = "results/preprocessing/cookingProt/limma.down.1.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 topOrdered <- top.limma[order(top.limma$adj.P.Val),]
 topOrderedDF <- as.data.frame(topOrdered)
 topOrderedDF <- na.omit(topOrderedDF)
-write.table(topOrderedDF, file = "results/preprocessing/cookingProt/limma.ordered.csv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
+write.table(topOrderedDF, file = "results/preprocessing/cookingProt/limma.ordered.tsv", row.names=TRUE, col.names=TRUE, sep="\t", quote=FALSE)
 ```
 
 ![](images/cookingProt/volcano.plot.limma.png)

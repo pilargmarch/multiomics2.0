@@ -182,6 +182,15 @@ table(rna.sample.info$days_to_death)
     ## 3472 3669 3959 6593 
     ##    2    2    2    1
 
+``` r
+load("data/cooked/RNA-Seq/RNA.filt.rda")
+rna.sample.info <- rna.sample.info[intersect(rownames(rna.sample.info), colnames(rna.filt.counts)), ] # delete duplicated samples from the clinical information
+# table(rna.sample.info$paper_BRCA_Subtype_PAM50)
+#  Basal   Her2   LumA   LumB Normal 
+#    128     46    416    139     34 
+sum(is.na(rna.sample.info$paper_BRCA_Subtype_PAM50)) # 85 NA
+```
+
 One question we might ask ourselves is which was the tissue type that
 was measured: primary tumor or solid tissue.
 
@@ -1628,13 +1637,13 @@ summary(res.deseq2)
 ```
 
 ``` r
-out of 19318 with nonzero total read count
-adjusted p-value < 0.05
-LFC > 0 (up)       : 10328, 53%
-LFC < 0 (down)     : 5224, 27%
-outliers [1]       : 0, 0%
-low counts [2]     : 0, 0%
-(mean count < 4)
+# out of 19318 with nonzero total read count
+# adjusted p-value < 0.05
+# LFC > 0 (up)       : 10328, 53%
+# LFC < 0 (down)     : 5224, 27%
+# outliers [1]       : 0, 0%
+# low counts [2]     : 0, 0%
+# (mean count < 4)
 ```
 
 We’ll select as significant those genes with a p.adj \< 0.05 and a lFC
