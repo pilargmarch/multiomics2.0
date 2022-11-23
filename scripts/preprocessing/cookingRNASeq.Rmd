@@ -1154,6 +1154,9 @@ rna.filt.counts$`TCGA-A7-A13D-01A-13R-A12P-07` <- NULL
 rna.filt.counts$`TCGA-A7-A13D-01B-04R-A277-07` <- NULL
 
 save(rna.filt.counts, file = "data/cooked/RNA-Seq/RNA.filt.rda")
+
+clinical <- rna.sample.info[colnames(rna.filt.counts), ]
+save(clinical, file = "data/raw/clinical.rda")
 ```
 
 We will perform normalization again, just to be sure.

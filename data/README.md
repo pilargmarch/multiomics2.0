@@ -1,8 +1,10 @@
 # :dna: Data
 
-Since the data files are too large to store on GitHub, here is the structure of the data folder with direct links to said files stored in [this MEGA folder](https://mega.nz/folder/Kl8h1LJJ#oactgNw1q3Wwu5qZaLdnkA). All data was downloaded with R/Bioconductor package `TCGAbiolinks` using Harmonized mode, which prepares data in a different way to Legacy (e.g. using `STAR` counts instead of `RSEM` estimated counts in the case of RNA-Seq) and aligns reads against human assembly GRCh38 (hg38). `.rda` files can be directly loaded into R.
+Since the data files are too large to store on GitHub, here is the structure of the data folder with direct links to said files stored in [this MEGA folder](https://mega.nz/folder/Kl8h1LJJ#oactgNw1q3Wwu5qZaLdnkA). All TCGA-BRCA (breast cancer) data was downloaded with R/Bioconductor package `TCGAbiolinks` using Harmonized mode, which prepares data in a different way to Legacy (e.g. using `STAR` counts instead of `RSEM` estimated counts in the case of RNA-Seq) and aligns reads against human assembly GRCh38 (hg38). `.rda` files can be directly loaded into R.
 
 *Note: some tumor samples had more than 1 files associated with them, for RNA-Seq, miRNA-Seq and methylation data, meaning some samples had to be removed or merged with other existing ones following [Broad's Institute guideline on replicate samples](https://gdac.broadinstitute.org/runs/gdc/report_2017_08_02/TCGA-LGG_Replicate_Samples.html), which recommends keeping samples with the highest lexicographical sort value for the plate number. When this was unclear, FFPE (formalin fixed paraffin embedded) samples were removed, since [they are not suitable for molecular analysis because the RNA and DNA are trapped in the nucleic acid-protein cross linking from the fixation process](https://gdac.broadinstitute.org/runs/stddata__2014_04_16/samples_report/FFPE_Cases.html). Cooked data DOES NOT have any duplicates, only raw data does.
+
+[Clinical data](https://mega.nz/file/v1kRAJrY#iuQLEVNJdpAYbpf3vkNWYPJemNf0eJ2_n_jzQY2TGrU) for the 848 samples that were finally used.
 
 ## 🥩 Raw data
 

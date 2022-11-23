@@ -2,7 +2,7 @@
 ![Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](scripts/cover.jpg)
 <sup>[Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](https://www.embl.org/news/science/charting-a-multi-omic-universe/)</sup>
 
-This is the repository for my Master's Final Thesis. First, RNA-Seq, miRNA-Seq, methylation and proteomics data was selected and downloaded from TCGA. After the data was processed and tested for differential expression, regulatory associations between these omics were retrieved from various databases. Finally, relevant features, associations and gene expression were all put into different methods to try to come up with a regulatory model for gene expression in breast cancer.
+This is the repository for my Master's Final Thesis. First, breast cancer RNA-Seq, miRNA-Seq, methylation and proteomics data was selected and downloaded from TCGA-BRCA. After the data was processed and tested for differential expression, regulatory associations between these omics were retrieved from various databases. Finally, relevant features, associations and gene expression were all put into different methods to try to come up with a regulatory model for gene expression in breast cancer.
 
 ## :dna: [Data](data/)
 RNA-Seq, miRNA-Seq, methylation and proteomics data used in this project, both as raw and cooked.
