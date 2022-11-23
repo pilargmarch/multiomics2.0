@@ -1,4 +1,4 @@
-# multiomics2.0
+# TCGA-BRCA multi-omics data integration
 ![Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](scripts/cover.jpg)
 <sup>[Charting a multi-omic universe. Image credits: Isabel Romero Calvo/EMBL.](https://www.embl.org/news/science/charting-a-multi-omic-universe/)</sup>
 
