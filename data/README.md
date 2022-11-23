@@ -4,7 +4,10 @@ Since the data files are too large to store on GitHub, here is the structure of 
 
 *Note: some tumor samples had more than 1 files associated with them, for RNA-Seq, miRNA-Seq and methylation data, meaning some samples had to be removed or merged with other existing ones following [Broad's Institute guideline on replicate samples](https://gdac.broadinstitute.org/runs/gdc/report_2017_08_02/TCGA-LGG_Replicate_Samples.html), which recommends keeping samples with the highest lexicographical sort value for the plate number. When this was unclear, FFPE (formalin fixed paraffin embedded) samples were removed, since [they are not suitable for molecular analysis because the RNA and DNA are trapped in the nucleic acid-protein cross linking from the fixation process](https://gdac.broadinstitute.org/runs/stddata__2014_04_16/samples_report/FFPE_Cases.html). Cooked data DOES NOT have any duplicates, only raw data does.
 
+RNA-Seq, miRNA-Seq and methylation all use the same samples: 772 patients for which 76 of them also had paired normal tissue quantification (772 tumor + 76 paired normal = 848 samples). Proteomics only uses 604 of these patients, who had 21 paired normal samples (604 tumor + 21 paired normal = 625 samples). These numbers correspond to proccessed data where duplicates had already been fixed.
+
 Although it wasn't used in the end, here is the [clinical data](https://mega.nz/file/v1kRAJrY#iuQLEVNJdpAYbpf3vkNWYPJemNf0eJ2_n_jzQY2TGrU) for the 848 samples that were finally used.
+
 
 ## 🥩 Raw data
 

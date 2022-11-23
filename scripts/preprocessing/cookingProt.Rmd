@@ -51,15 +51,15 @@ Some peptides have missing values for all samples, so these ones we will remove.
 
 ```{r, eval = FALSE}
 patients.to.remove <- rownames(missing.per.patient[which(missing.per.patient$percentage >= 20), ]) # 18
- [1] "TCGA-JL-A3YX-01A" "TCGA-AR-A24W-01A" "TCGA-A7-A26E-01A" "TCGA-A1-A0SQ-01A" "TCGA-BH-A1FL-01A" "TCGA-AR-A255-01A" "TCGA-AC-A23E-01A"
- [8] "TCGA-E9-A1RE-01A" "TCGA-EW-A1OY-01A" "TCGA-BH-A1EO-01A" "TCGA-D8-A1JJ-01A" "TCGA-D8-A1JN-01A" "TCGA-A2-A1FV-01A" "TCGA-BH-A1FR-01A"
-[15] "TCGA-E9-A1R6-01A" "TCGA-A1-A0SF-01A" "TCGA-D8-A1JU-01A" "TCGA-EW-A1PD-01A"
+#  [1] "TCGA-JL-A3YX-01A" "TCGA-AR-A24W-01A" "TCGA-A7-A26E-01A" "TCGA-A1-A0SQ-01A" "TCGA-BH-A1FL-01A" "TCGA-AR-A255-01A" "TCGA-AC-A23E-01A"
+#  [8] "TCGA-E9-A1RE-01A" "TCGA-EW-A1OY-01A" "TCGA-BH-A1EO-01A" "TCGA-D8-A1JJ-01A" "TCGA-D8-A1JN-01A" "TCGA-A2-A1FV-01A" "TCGA-BH-A1FR-01A"
+# [15] "TCGA-E9-A1R6-01A" "TCGA-A1-A0SF-01A" "TCGA-D8-A1JU-01A" "TCGA-EW-A1PD-01A"
 peptides.to.remove <- rownames(missing.per.peptide[which(missing.per.peptide$percentage >= 20), ]) # 30
- [1] "ALPHACATENIN"       "AXL"                "CA9"                "CASPASE9"           "COMPLEXIISUBUNIT30" "CTLA4"              "E2F1"              
- [8] "ENY2"               "EZH2"               "GATA6"              "GCN5L2"             "GYS"                "GYS_pS641"          "HIF1ALPHA"         
-[15] "LDHA"               "LDHB"               "MITOCHONDRIA"       "MYOSINIIA"          "NAPSINA"            "NRF2"               "P63"               
-[22] "PARP1"              "PDCD1"              "PKM2"               "PYGB"               "PYGL"               "PYGM"               "RET_pY905"         
-[29] "SLC1A5"             "TTF1"
+#  [1] "ALPHACATENIN"       "AXL"                "CA9"                "CASPASE9"           "COMPLEXIISUBUNIT30" "CTLA4"              "E2F1"              
+#  [8] "ENY2"               "EZH2"               "GATA6"              "GCN5L2"             "GYS"                "GYS_pS641"          "HIF1ALPHA"         
+# [15] "LDHA"               "LDHB"               "MITOCHONDRIA"       "MYOSINIIA"          "NAPSINA"            "NRF2"               "P63"               
+# [22] "PARP1"              "PDCD1"              "PKM2"               "PYGB"               "PYGL"               "PYGM"               "RET_pY905"         
+# [29] "SLC1A5"             "TTF1"
 ```
 
 
