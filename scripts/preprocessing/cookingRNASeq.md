@@ -1562,6 +1562,9 @@ rna.filt.counts$`TCGA-A7-A13D-01A-13R-A12P-07` <- NULL
 rna.filt.counts$`TCGA-A7-A13D-01B-04R-A277-07` <- NULL
 
 save(rna.filt.counts, file = "data/cooked/RNA-Seq/RNA.filt.rda")
+
+clinical <- rna.sample.info[colnames(rna.filt.counts), ]
+save(clinical, file = "data/raw/clinical.rda")
 ```
 
 We will perform normalization again, just to be sure.
@@ -1880,10 +1883,10 @@ summary(de)
 ```
 
 ``` r
-       cancer-normal
-Down             586
-NotSig         17760
-Up               972
+#        cancer-normal
+# Down             586
+# NotSig         17760
+# Up               972
 ```
 
 ``` r
@@ -1975,6 +1978,25 @@ length(common.activated) # 535
 common.repressed <- intersect(intersect(repressed.genes.deseq2, repressed.genes.edger), repressed.genes.limma) 
 length(common.repressed) # 486
 
+log.fold.change <- top.limma$logFC
+q.value <- top.limma$adj.P.Val
+genes.ids <- rownames(top.limma)
+names(log.fold.change) <- genes.ids
+names(q.value) <- genes.ids
+
+log.q.val <- -log10(q.value)
+plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
+xlim=c(-8,8),ylim = c(0,150),
+xlab="log2(Fold-change)",ylab="-log10(q-value)",cex.lab=1.5)
+points(x = log.fold.change[common.activated],
+y = log.q.val[common.activated],col="red",cex=0.8,pch=19)
+points(x = log.fold.change[common.repressed],
+y = log.q.val[common.repressed],col="blue",cex=0.8,pch=19)
+```
+
+![](images/cookingRNASeq/volcano.plot.common.png)
+
+``` r
 write.table(common.activated, file = "results/preprocessing/cookingRNASeq/common.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(common.repressed, file = "results/preprocessing/cookingRNASeq/common.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)

@@ -268,7 +268,7 @@ save(mirna.filt.counts, file = "data/cooked/miRNA-Seq/miRNA.filt.rda")
 ```
 
 ``` r
-mean_log_cpm <- aveLogCPM(mirna.raw.counts)
+mean_log_cpm <- aveLogCPM(mirna.filt.counts)
 
 filter_threshold <- log2(0.5)
 
@@ -905,15 +905,32 @@ and `edgeR`, since `limma` appears to miss out on quite a few of them.
 common.activated <- intersect(intersect(activated.genes.deseq2, activated.genes.edger), activated.genes.limma.voom) # 86
 common.repressed <- intersect(intersect(repressed.genes.deseq2, repressed.genes.edger), repressed.genes.limma.voom) # 91
 
+log.fold.change <- top.limma$logFC
+q.value <- top.limma$adj.P.Val
+genes.ids <- rownames(top.limma)
+names(log.fold.change) <- genes.ids
+names(q.value) <- genes.ids
+
+log.q.val <- -log10(q.value)
+plot(log.fold.change,log.q.val,pch=19,col="grey",cex=0.8,
+xlim=c(-4,4),ylim = c(0,100),
+xlab="log2(Fold-change)",ylab="-log10(q-value)",cex.lab=1.5)
+points(x = log.fold.change[common.activated],
+y = log.q.val[common.activated],col="red",cex=0.8,pch=19)
+points(x = log.fold.change[common.repressed],
+y = log.q.val[common.repressed],col="blue",cex=0.8,pch=19)
+
 write.table(common.activated, file = "results/preprocessing/cookingmiRNASeq/common.up.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 write.table(common.repressed, file = "results/preprocessing/cookingmiRNASeq/common.down.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 ```
 
+![](images/cookingmiRNASeq/volcano.plot.common.png)
+
 |    DEGs     | DESeq2 | limma-voom | edgeR | Common |
 |:-----------:|:------:|:----------:|:-----:|:------:|
-| *Activated* |  132   |     79     |  129  |   67   |
-| *Repressed* |   83   |     93     |  76   |   56   |
+| *Activated* |  156   |     87     |  163  |   67   |
+| *Repressed* |  112   |    127     |  97   |   56   |
 |   *Total*   | *215*  |   *172*    | *205* | *123*  |
 
 We have 177 DEGs, a 27.6% of the filtered miRNAs (642) and a 8% of the

@@ -29,7 +29,7 @@ load("data/raw/prot/prot.rda")
 There are no duplicated samples. Protein expression is given by Relative levels of protein expression - interpolation of each dilution curve to the "standard curve" (supercurve) of the slide (antibody).
 
 ```{r, eval = FALSE}
-prot <- prot[-c(1,2,3,4,5)]
+prot <- prot[-c(1,2,3,4)]
 
 boxplot(prot[, 1:50], outline = FALSE, las = 2, names = substr(colnames(prot), 6, 12)[1:50], main = "Normalized protein expression")
 ```
